@@ -1,10 +1,11 @@
 'use client';
 
+import { Suspense } from 'react';
 import { createClient } from '@/lib/supabase-client';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-export default function LoginPage() {
+function LoginForm() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const [loading, setLoading] = useState(false);
@@ -64,6 +65,22 @@ export default function LoginPage() {
 				</button>
 			</div>
 		</div>
+	);
+}
+
+export default function LoginPage() {
+	return (
+		<Suspense fallback={
+			<div className="min-h-screen flex items-center justify-center bg-lwhite">
+				<div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+					<div className="text-center">
+						<p className="text-gray-600">Loading...</p>
+					</div>
+				</div>
+			</div>
+		}>
+			<LoginForm />
+		</Suspense>
 	);
 }
 
