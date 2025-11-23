@@ -84,12 +84,14 @@ export default function Hero() {
 								</svg>
 							</span>
 						</Link>
-						<Link
-							href="/contact"
+						<a
+							href="https://www.google.com/maps?ll=43.009903,-81.153694&z=17&t=m&hl=en&gl=US&mapclient=embed&q=2271+Dundas+St+London,+ON+N5V+1R4"
+							target="_blank"
+							rel="noopener noreferrer"
 							className="px-8 py-4 bg-white/5 backdrop-blur-sm border border-white/20 text-white/90 font-medium rounded-md transition-all duration-300 hover:bg-white/10 hover:border-white/30"
 						>
 							Visit Our Lot
-						</Link>
+						</a>
 					</div>
 				</div>
 			</div>
