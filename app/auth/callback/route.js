@@ -11,6 +11,9 @@ export async function GET(request) {
 		await supabase.auth.exchangeCodeForSession(code);
 	}
 
-	return NextResponse.redirect(new URL(redirectTo, request.url));
-}
+	// Use environment variable for production, fallback to request URL for development
+	const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || requestUrl.origin;
+	const redirectUrl = new URL(redirectTo, siteUrl);
 
+	return NextResponse.redirect(redirectUrl);
+}
