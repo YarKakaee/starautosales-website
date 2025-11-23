@@ -1,25 +1,49 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import ContactForm from './ContactForm';
 
 export default function ContactUs() {
+	const [mounted, setMounted] = useState(false);
+
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
 	return (
-		<section className="px-4 sm:px-6 md:px-24 lg:px-32 xl:px-48 2xl:px-64 p-14 pb-20 bg-lwhite text-dblue">
-			<div className="max-w-7xl mx-auto">
-				<div className="text-center">
-					<h2 className="text-center text-4xl mb-8 sm:text-4xl md:text-5xl font-black">
+		<section className="py-32 bg-white">
+			<div className="max-w-7xl mx-auto px-6 lg:px-8">
+				{/* Header */}
+				<div
+					className={`text-center mb-16 transition-all duration-1000 ${
+						mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+					}`}
+				>
+					<p className="text-sm text-gray-500 uppercase tracking-wider mb-4">
+						Get in Touch
+					</p>
+					<h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-dblue mb-4">
 						Contact Us
 					</h2>
-					<p className="text-lg">
-						We would love to hear from you! Fill out the form below
-						to get in touch.
+					<div className="w-24 h-0.5 bg-dblue mx-auto mb-6" />
+					<p className="max-w-2xl mx-auto text-lg text-gray-600 leading-relaxed font-light">
+						We would love to hear from you! Fill out the form below to get in
+						touch.
 					</p>
 				</div>
-				<div className="mt-12 mx-auto">
+
+				{/* Contact Form */}
+				<div
+					className={`max-w-2xl mx-auto transition-all duration-1000 ${
+						mounted
+							? 'opacity-100 translate-y-0'
+							: 'opacity-0 translate-y-10'
+					}`}
+					style={{ transitionDelay: '200ms' }}
+				>
 					<ContactForm />
 				</div>
 			</div>
 		</section>
 	);
 }
-

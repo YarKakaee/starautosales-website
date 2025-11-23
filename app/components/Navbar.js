@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { FaPhone } from 'react-icons/fa';
 
 export default function Navbar() {
 	const currentPath = usePathname();
@@ -79,12 +80,13 @@ export default function Navbar() {
 							{/* Phone Number */}
 							<a
 								href="tel:+15197012378"
-								className={`ml-4 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+								className={`ml-4 px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${
 									scrolled
 										? 'bg-lred text-white hover:bg-lred/90'
 										: 'bg-white/5 backdrop-blur-sm border border-white/20 text-white/90 hover:bg-white/10'
 								}`}
 							>
+								<FaPhone className="w-3.5 h-3.5 scale-x-[-1]" />
 								(519) 701-2378
 							</a>
 						</ul>
@@ -151,8 +153,9 @@ export default function Navbar() {
 							})}
 							<a
 								href="tel:+15197012378"
-								className="block px-4 py-3 mt-2 rounded-lg text-base font-semibold bg-lred text-white text-center"
+								className="flex items-center justify-center gap-2 px-4 py-3 mt-2 rounded-lg text-base font-semibold bg-lred text-white"
 							>
+								<FaPhone className="w-4 h-4 scale-x-[-1]" />
 								(519) 701-2378
 							</a>
 						</div>

@@ -1,12 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import axios from 'axios';
-import { FaTachometerAlt } from 'react-icons/fa';
-import { TbManualGearboxFilled } from 'react-icons/tb';
-import { HiOutlineShieldCheck } from 'react-icons/hi';
+import VehicleCard from './VehicleCard';
 
 export default function NewArrivals() {
 	const [cars, setCars] = useState([]);
@@ -63,98 +60,13 @@ export default function NewArrivals() {
 				{/* Car Grid - Gallery Style */}
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
 					{cars.map((car, index) => (
-						<Link
+						<VehicleCard
 							key={car.listingId}
-							href={`/vehicles/${car.listingId}`}
-							className="group"
-						>
-							<div
-								className={`bg-white border border-gray-100 rounded-lg overflow-hidden transition-all duration-500 ease-out ${
-									mounted
-										? 'opacity-100 translate-y-0'
-										: 'opacity-0 translate-y-8'
-								} hover:shadow-xl hover:-translate-y-1 hover:border-gray-200`}
-								style={{
-									transitionDelay: `${index * 100}ms`,
-								}}
-							>
-								{/* Image Container */}
-								<div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
-									{car.image1 ? (
-										<Image
-											src={car.image1}
-											alt={`${car.year} ${car.make} ${car.model}`}
-											fill
-											className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-										/>
-									) : (
-										<div className="w-full h-full flex items-center justify-center">
-											<svg
-												className="w-16 h-16 text-gray-300"
-												fill="none"
-												stroke="currentColor"
-												viewBox="0 0 24 24"
-											>
-												<path
-													strokeLinecap="round"
-													strokeLinejoin="round"
-													strokeWidth={1.5}
-													d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-												/>
-											</svg>
-										</div>
-									)}
-								</div>
-
-								{/* Content */}
-								<div className="p-6">
-									{/* Title */}
-									<h3 className="text-xl font-bold text-dblue mb-3 group-hover:text-gray-700 transition-colors duration-300">
-										{car.year} {car.make} {car.model}
-									</h3>
-
-									{/* Key Details - Minimal */}
-									<div className="grid grid-cols-2 gap-4 mb-4">
-										<div className="flex items-center gap-2 text-sm text-gray-600 transition-colors duration-300 group-hover:text-gray-700">
-											<FaTachometerAlt className="w-4 h-4 text-gray-400 flex-shrink-0 transition-colors duration-300 group-hover:text-gray-500" />
-											<span>
-												{car.mileage.toLocaleString()}{' '}
-												km
-											</span>
-										</div>
-										<div className="flex items-center gap-2 text-sm text-gray-600 justify-end transition-colors duration-300 group-hover:text-gray-700">
-											<TbManualGearboxFilled className="w-4 h-4 text-gray-400 flex-shrink-0 transition-colors duration-300 group-hover:text-gray-500" />
-											<span>{car.transmission}</span>
-										</div>
-									</div>
-
-									{/* Price */}
-									<div className="pt-4 border-t border-gray-100 flex items-end justify-between transition-colors duration-300 group-hover:border-gray-200">
-										<p className="text-2xl font-bold text-dblue transition-colors duration-300 group-hover:text-gray-800">
-											${car.price.toLocaleString()}
-											<span className="text-[15px] font-medium text-gray-500 ml-1 transition-colors duration-300 group-hover:text-gray-600">
-												+ HST
-											</span>
-										</p>
-										{car.safety && (
-											<div className="flex items-center gap-1.5 text-sm pb-0.5 transition-transform duration-300 group-hover:translate-x-0.5">
-												<HiOutlineShieldCheck className="w-4 h-4 text-gray-400 flex-shrink-0 transition-colors duration-300 group-hover:text-gray-500" />
-												<span
-													className={`font-medium transition-colors duration-300 ${
-														car.safety.toLowerCase() ===
-														'certified'
-															? 'text-lgreen group-hover:text-lgreen/80'
-															: 'text-gray-600 group-hover:text-gray-700'
-													}`}
-												>
-													{car.safety}
-												</span>
-											</div>
-										)}
-									</div>
-								</div>
-							</div>
-						</Link>
+							car={car}
+							index={index}
+							mounted={mounted}
+							animationDelay={100}
+						/>
 					))}
 				</div>
 

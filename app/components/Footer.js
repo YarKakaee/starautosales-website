@@ -5,108 +5,48 @@ import Link from 'next/link';
 
 export default function Footer() {
 	return (
-		<footer className="px-4 sm:px-6 md:px-24 lg:px-32 xl:px-48 2xl:px-64 p-14 pb-16 bg-dblue text-lwhite">
-			<div className="flex flex-wrap justify-between text-center sm:text-start">
-				<div className="w-full sm:w-1/2 md:w-auto mb-8 md:mb-0">
-					<h2 className="text-xl font-bold mb-6">Quick Links</h2>
-					<ul className="list-none flex flex-col items-center sm:items-start gap-4">
-						<Link href={'/about'}>
-							<li className="relative group">
-								<h3 className="font-normal duration-300">
-									About Us
-								</h3>
-								<div className="absolute w-full bg-lwhite h-0.5 top-6 left-0 transition-all duration-300 transform scale-x-0 group-hover:scale-x-100"></div>
-							</li>
+		<footer className="bg-dblue text-white py-8 border-t border-white/10">
+			<div className="max-w-7xl mx-auto px-6 lg:px-8">
+				<div className="relative flex flex-col md:flex-row items-center gap-6">
+					{/* Powered by Asterra - Left */}
+					<a
+						href="https://asterra.ca"
+						target="_blank"
+						rel="noopener noreferrer"
+						className="flex items-center gap-2 order-3 md:order-1 md:flex-1 md:justify-start"
+					>
+						<Image
+							src="/assets/asterra.png"
+							alt="Asterra"
+							width={568}
+							height={89}
+							className="h-7 w-auto transition-opacity duration-200 hover:opacity-80"
+						/>
+					</a>
+
+					{/* Copyright - Middle - Always Centered */}
+					<div className="text-sm text-white/60 order-1 md:order-2 md:absolute md:left-1/2 md:transform md:-translate-x-1/2">
+						<p>© 2025 Star Auto Sales. All rights reserved.</p>
+					</div>
+
+					{/* Privacy & Terms - Right */}
+					<div className="flex items-center gap-4 text-sm order-2 md:order-3 md:flex-1 md:justify-end">
+						<Link
+							href="/privacy"
+							className="text-white/60 hover:text-white transition-colors duration-300"
+						>
+							Privacy Policy
 						</Link>
-						<Link href={'/contact'}>
-							<li className="relative group">
-								<h3 className="font-normal duration-300">
-									Contact Us
-								</h3>
-								<div className="absolute w-full bg-lwhite h-0.5 top-6 left-0 transition-all duration-300 transform scale-x-0 group-hover:scale-x-100"></div>
-							</li>
+
+						<Link
+							href="/terms"
+							className="text-white/60 hover:text-white transition-colors duration-300"
+						>
+							Terms of Service
 						</Link>
-						<Link href={'/vehicles'}>
-							<li className="relative group">
-								<h3 className="font-normal duration-300">
-									Explore our Inventory
-								</h3>
-								<div className="absolute w-full bg-lwhite h-0.5 top-6 left-0 transition-all duration-300 transform scale-x-0 group-hover:scale-x-100"></div>
-							</li>
-						</Link>
-					</ul>
-				</div>
-				<div className="w-full sm:w-1/2 md:w-auto mb-8 md:mb-0">
-					<h2 className="text-xl font-bold mb-6">Reach Us</h2>
-					<ul className="list-none flex flex-col items-center sm:items-start gap-4">
-						<li className="relative group">
-							<h3 className="font-normal duration-300">
-								(519) 701-2378
-							</h3>
-							<div className="absolute w-full bg-lwhite h-0.5 top-6 left-0 transition-all duration-300 transform scale-x-0"></div>
-						</li>
-						<li className="relative group">
-							<h3 className="font-normal duration-300">
-								starautosalesinfo@gmail.com
-							</h3>
-							<div className="absolute w-full bg-lwhite h-0.5 top-6 left-0 transition-all duration-300 transform scale-x-0"></div>
-						</li>
-						<li className="relative group">
-							<h3 className="font-normal duration-300">
-								2271 Dundas Street, London, ON
-							</h3>
-							<div className="absolute w-full bg-lwhite h-0.5 top-6 left-0 transition-all duration-300 transform scale-x-0"></div>
-						</li>
-					</ul>
-				</div>
-				<div className="w-full sm:w-1/2 md:w-auto mb-8 md:mb-0">
-					<h2 className="text-xl font-bold mb-6">Legal</h2>
-					<ul className="list-none flex flex-col items-center sm:items-start gap-4">
-						<Link href={'/legal/privacy'}>
-							<li className="relative group">
-								<h3 className="font-normal duration-300">
-									Privacy Policy
-								</h3>
-								<div className="absolute w-full bg-lwhite h-0.5 top-6 left-0 transition-all duration-300 transform scale-x-0 group-hover:scale-x-100"></div>
-							</li>
-						</Link>
-						<Link href={'/legal/terms'}>
-							<li className="relative group">
-								<h3 className="font-normal duration-300">
-									Terms & Conditions
-								</h3>
-								<div className="absolute w-full bg-lwhite h-0.5 top-6 left-0 transition-all duration-300 transform scale-x-0 group-hover:scale-x-100"></div>
-							</li>
-						</Link>
-						<Link href={'/legal/accessibility'}>
-							<li className="relative group">
-								<h3 className="font-normal duration-300">
-									Accessibility Statement
-								</h3>
-								<div className="absolute w-full bg-lwhite h-0.5 top-6 left-0 transition-all duration-300 transform scale-x-0 group-hover:scale-x-100"></div>
-							</li>
-						</Link>
-					</ul>
-				</div>
-				<div className="w-full sm:w-1/2 md:w-auto items-center flex flex-col">
-					<Image
-						width={225}
-						height={225}
-						className="-mt-5"
-						src="/assets/logo.png"
-						alt="logo"
-					/>
-					<p className="text-sm font-normal mb-2 text-center">
-						© 2025 | All Rights Reserved
-					</p>
-					<p className="text-sm font-bold text-center">
-						<Link href="https://www.linkedin.com/in/yar-kakaee/">
-							Developed by Yar Kakaee
-						</Link>
-					</p>
+					</div>
 				</div>
 			</div>
 		</footer>
 	);
 }
-

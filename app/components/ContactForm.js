@@ -1,50 +1,75 @@
 'use client';
 
+import { useState } from 'react';
+
 export default function ContactForm() {
-	// Placeholder for now - will need to integrate formspree or similar later
+	const [isSubmitting, setIsSubmitting] = useState(false);
+
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+		setIsSubmitting(true);
+		// TODO: Integrate form submission (Formspree, EmailJS, etc.)
+		setTimeout(() => {
+			setIsSubmitting(false);
+			alert('Thank you for your message! We will get back to you soon.');
+			e.target.reset();
+		}, 1000);
+	};
+
 	return (
-		<div className="max-w-2xl mx-auto rounded-md drop-shadow-[1px_1px_20px_rgba(0,0,0,0.5)] bg-white p-5">
-			<form>
-				<input
-					type="text"
-					placeholder="Name *"
-					name="name"
-					required
-					className="w-full px-4 py-3 text-sm mb-4 border border-lwhite rounded-md focus:outline-dblue"
-				/>
-				<input
-					type="email"
-					placeholder="Email *"
-					name="email"
-					required
-					className="w-full px-4 py-3 text-sm mb-4 border border-lwhite rounded-md focus:outline-dblue"
-				/>
-				<input
-					type="text"
-					placeholder="Phone"
-					name="phone"
-					className="w-full px-4 py-3 text-sm mb-4 border border-lwhite rounded-md focus:outline-dblue"
-				/>
-				<input
-					type="text"
-					placeholder="Subject"
-					name="subject"
-					className="w-full px-4 py-3 text-sm mb-4 border border-lwhite rounded-md focus:outline-dblue"
-				/>
-				<textarea
-					placeholder="Your Message *"
-					name="message"
-					required
-					className="w-full px-4 py-3 text-sm mb-4 border border-lwhite rounded-md focus:outline-dblue resize-none"
-				></textarea>
+		<div className="bg-white border border-gray-200 rounded-lg p-8 lg:p-10 shadow-sm">
+			<form onSubmit={handleSubmit} className="space-y-5">
+				<div>
+					<input
+						type="text"
+						placeholder="Name *"
+						name="name"
+						required
+						className="w-full px-4 py-3 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-dblue focus:border-transparent transition-all duration-300 bg-white"
+					/>
+				</div>
+				<div>
+					<input
+						type="email"
+						placeholder="Email *"
+						name="email"
+						required
+						className="w-full px-4 py-3 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-dblue focus:border-transparent transition-all duration-300 bg-white"
+					/>
+				</div>
+				<div>
+					<input
+						type="tel"
+						placeholder="Phone"
+						name="phone"
+						className="w-full px-4 py-3 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-dblue focus:border-transparent transition-all duration-300 bg-white"
+					/>
+				</div>
+				<div>
+					<input
+						type="text"
+						placeholder="Subject"
+						name="subject"
+						className="w-full px-4 py-3 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-dblue focus:border-transparent transition-all duration-300 bg-white"
+					/>
+				</div>
+				<div>
+					<textarea
+						placeholder="Your Message *"
+						name="message"
+						rows={6}
+						required
+						className="w-full px-4 py-3 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-dblue focus:border-transparent transition-all duration-300 resize-none bg-white"
+					></textarea>
+				</div>
 				<button
 					type="submit"
-					className="bg-lred text-lwhite py-3 px-6 rounded-md text-base font-semibold transition duration-300 uppercase drop-shadow-[1px_1px_20px_rgba(0,0,0,0.2)] hover:drop-shadow-[1px_1px_20px_rgba(0,0,0,0.5)] ease-out w-full"
+					disabled={isSubmitting}
+					className="w-full bg-lred text-white py-3 px-6 rounded-md text-base font-medium transition-all duration-300 hover:bg-lred/90 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
 				>
-					Submit
+					{isSubmitting ? 'Sending...' : 'Send Message'}
 				</button>
 			</form>
 		</div>
 	);
 }
-
