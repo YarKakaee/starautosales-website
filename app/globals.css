@@ -1,26 +1,93 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+	--color-dblue: #14141b;
+	--color-lwhite: #eaeaea;
+	--color-lred: #de3a3a;
+	--color-redd: #de3a3a;
+	--color-lredhover: #ff9191;
+	--color-lgrey: #969696;
+	--color-lgreen: #408546;
+	--font-family-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+		Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@keyframes gradient {
+	0%,
+	100% {
+		background-size: 200% 200%;
+		background-position: left center;
+	}
+	50% {
+		background-size: 200% 200%;
+		background-position: right center;
+	}
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@keyframes shimmer {
+	0% {
+		background-position: -1000px 0;
+	}
+	100% {
+		background-position: 1000px 0;
+	}
+}
+
+@keyframes float {
+	0%,
+	100% {
+		transform: translateY(0) translateX(0);
+		opacity: 0.3;
+	}
+	25% {
+		transform: translateY(-20px) translateX(10px);
+		opacity: 0.5;
+	}
+	50% {
+		transform: translateY(-40px) translateX(-10px);
+		opacity: 0.3;
+	}
+	75% {
+		transform: translateY(-20px) translateX(10px);
+		opacity: 0.5;
+	}
+}
+
+@keyframes pulse {
+	0%, 100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.5;
+	}
+}
+
+.animate-pulse {
+	animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.delay-1000 {
+	animation-delay: 1s;
+}
+
+.animate-gradient {
+	animation: gradient 15s ease infinite;
+}
+
+.animate-shimmer {
+	animation: shimmer 8s linear infinite;
+}
+
+.animate-float {
+	animation: float 10s ease-in-out infinite;
+}
+
+* {
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+		Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+		Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
