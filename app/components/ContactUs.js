@@ -11,7 +11,7 @@ export default function ContactUs() {
 	}, []);
 
 	return (
-		<section className="py-32 bg-white">
+		<section id="contact" className="py-32 bg-white">
 			<div className="max-w-7xl mx-auto px-6 lg:px-8">
 				{/* Header */}
 				<div

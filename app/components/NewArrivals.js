@@ -52,7 +52,7 @@ export default function NewArrivals() {
 						Just Arrived
 					</p>
 					<h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-dblue mb-4">
-						Latest Arrivals
+				Latest Arrivals
 					</h2>
 					<div className="w-24 h-0.5 bg-dblue mx-auto" />
 				</div>

@@ -11,7 +11,7 @@ export default function AboutUs() {
 	}, []);
 
 	return (
-		<section className="py-32 bg-dblue text-white relative overflow-hidden">
+		<section id="about" className="py-32 bg-dblue text-white relative overflow-hidden">
 			{/* Subtle background pattern */}
 			<div className="absolute inset-0 opacity-5">
 				<div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:40px_40px]" />

@@ -43,7 +43,7 @@ export async function POST(request) {
 				
 				// Validate URL format
 				if (result.url && result.url.includes('supabase.co/storage/v1/object/public/car-images')) {
-					uploadedUrls[key] = result.url;
+				uploadedUrls[key] = result.url;
 				} else {
 					console.error(`Invalid URL format for ${key}:`, result.url);
 				}

@@ -227,7 +227,7 @@ export default function AddUpdateVehicle({ car }) {
 					// For editing: only include existing images (HTTP URLs), not blob URLs
 					// Blob URLs are temporary preview URLs, not actual image URLs
 					if (imagePreviews[key].startsWith('http')) {
-						imageData[key] = imagePreviews[key];
+					imageData[key] = imagePreviews[key];
 					}
 				}
 				// For new cars: don't include blob URLs - images will be uploaded after creation

@@ -37,15 +37,15 @@ export default function InventoryCard({ car, view }) {
 
 			<div className="w-1/3 xl:w-2/5">
 				{image1 && image1.trim() !== '' ? (
-					<Image
-						src={image1}
+				<Image
+					src={image1}
 						alt={`${year} ${make} ${model}`}
-						width={1000}
-						height={1000}
-						className={`w-full h-2/5 sm:h-full object-cover cursor-pointer absolute sm:w-1/3 xl:w-2/5 overflow-hidden top-0 left-0 right-0 bottom-0 rounded-tl-md rounded-tr-md sm:rounded-bl-md sm:rounded-tr-none ${
-							sold ? 'opacity-50' : ''
-						}`}
-					/>
+					width={1000}
+					height={1000}
+					className={`w-full h-2/5 sm:h-full object-cover cursor-pointer absolute sm:w-1/3 xl:w-2/5 overflow-hidden top-0 left-0 right-0 bottom-0 rounded-tl-md rounded-tr-md sm:rounded-bl-md sm:rounded-tr-none ${
+						sold ? 'opacity-50' : ''
+					}`}
+				/>
 				) : (
 					<div className={`w-full h-2/5 sm:h-full bg-gray-200 flex items-center justify-center absolute sm:w-1/3 xl:w-2/5 overflow-hidden top-0 left-0 right-0 bottom-0 rounded-tl-md rounded-tr-md sm:rounded-bl-md sm:rounded-tr-none ${
 						sold ? 'opacity-50' : ''

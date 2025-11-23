@@ -23,10 +23,48 @@ export default function Navbar() {
 		setMenuOpen(!menuOpen);
 	};
 
+	const handleAboutClick = (e) => {
+		e.preventDefault();
+		if (currentPath === '/') {
+			// Smooth scroll to about section on homepage
+			const aboutSection = document.getElementById('about');
+			if (aboutSection) {
+				const offsetTop = aboutSection.offsetTop - 80; // Account for fixed navbar
+				window.scrollTo({
+					top: offsetTop,
+					behavior: 'smooth',
+				});
+			}
+		} else {
+			// Navigate to homepage with hash
+			window.location.href = '/#about';
+		}
+		setMenuOpen(false);
+	};
+
+	const handleContactClick = (e) => {
+		e.preventDefault();
+		if (currentPath === '/') {
+			// Smooth scroll to contact section on homepage
+			const contactSection = document.getElementById('contact');
+			if (contactSection) {
+				const offsetTop = contactSection.offsetTop - 80; // Account for fixed navbar
+				window.scrollTo({
+					top: offsetTop,
+					behavior: 'smooth',
+				});
+			}
+		} else {
+			// Navigate to homepage with hash
+			window.location.href = '/#contact';
+		}
+		setMenuOpen(false);
+	};
+
 	const navLinks = [
 		{ href: '/vehicles', label: 'Inventory' },
-		{ href: '/about', label: 'About' },
-		{ href: '/contact', label: 'Contact' },
+		{ href: '/#about', label: 'About', onClick: handleAboutClick },
+		{ href: '/#contact', label: 'Contact', onClick: handleContactClick },
 	];
 
 	return (
@@ -57,18 +95,14 @@ export default function Navbar() {
 						{/* Desktop Navigation - More Spaced, Less Tech-y */}
 						<ul className="hidden md:flex items-center space-x-8">
 							{navLinks.map((link) => {
-								const isActive = currentPath === link.href;
 								return (
 									<li key={link.href}>
 										<Link
 											href={link.href}
-											className={`relative px-3 py-2 text-sm font-medium transition-all duration-300 ${
+											onClick={link.onClick}
+											className={`relative px-3 py-2 text-sm font-medium transition-all duration-300 cursor-pointer ${
 												scrolled
-													? isActive
-														? 'text-dblue'
-														: 'text-gray-700 hover:text-dblue'
-													: isActive
-													? 'text-white'
+													? 'text-gray-700 hover:text-dblue'
 													: 'text-white/90 hover:text-white'
 											}`}
 										>
@@ -135,17 +169,15 @@ export default function Navbar() {
 					<div className="md:hidden bg-white border-t border-gray-200 shadow-lg">
 						<div className="px-6 py-4 space-y-1">
 							{navLinks.map((link) => {
-								const isActive = currentPath === link.href;
 								return (
 									<Link
 										key={link.href}
 										href={link.href}
-										onClick={() => setMenuOpen(false)}
-										className={`block px-4 py-3 rounded-lg text-base font-medium transition-colors ${
-											isActive
-												? 'text-dblue bg-gray-50'
-												: 'text-gray-700 hover:bg-gray-50'
-										}`}
+										onClick={
+											link.onClick ||
+											(() => setMenuOpen(false))
+										}
+										className="block px-4 py-3 rounded-lg text-base font-medium transition-colors cursor-pointer text-gray-700 hover:bg-gray-50"
 									>
 										{link.label}
 									</Link>

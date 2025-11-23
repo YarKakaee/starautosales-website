@@ -20,47 +20,47 @@ export default function ContactForm() {
 		<div className="bg-white border border-gray-200 rounded-lg p-8 lg:p-10 shadow-sm">
 			<form onSubmit={handleSubmit} className="space-y-5">
 				<div>
-					<input
-						type="text"
-						placeholder="Name *"
-						name="name"
-						required
+				<input
+					type="text"
+					placeholder="Name *"
+					name="name"
+					required
 						className="w-full px-4 py-3 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-dblue focus:border-transparent transition-all duration-300 bg-white"
-					/>
+				/>
 				</div>
 				<div>
-					<input
-						type="email"
-						placeholder="Email *"
-						name="email"
-						required
+				<input
+					type="email"
+					placeholder="Email *"
+					name="email"
+					required
 						className="w-full px-4 py-3 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-dblue focus:border-transparent transition-all duration-300 bg-white"
-					/>
+				/>
 				</div>
 				<div>
-					<input
+				<input
 						type="tel"
-						placeholder="Phone"
-						name="phone"
+					placeholder="Phone"
+					name="phone"
 						className="w-full px-4 py-3 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-dblue focus:border-transparent transition-all duration-300 bg-white"
-					/>
+				/>
 				</div>
 				<div>
-					<input
-						type="text"
-						placeholder="Subject"
-						name="subject"
+				<input
+					type="text"
+					placeholder="Subject"
+					name="subject"
 						className="w-full px-4 py-3 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-dblue focus:border-transparent transition-all duration-300 bg-white"
-					/>
+				/>
 				</div>
 				<div>
-					<textarea
-						placeholder="Your Message *"
-						name="message"
+				<textarea
+					placeholder="Your Message *"
+					name="message"
 						rows={6}
-						required
+					required
 						className="w-full px-4 py-3 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-dblue focus:border-transparent transition-all duration-300 resize-none bg-white"
-					></textarea>
+				></textarea>
 				</div>
 				<button
 					type="submit"
