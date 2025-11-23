@@ -6,10 +6,12 @@ import { FaTachometerAlt } from 'react-icons/fa';
 import { TbManualGearboxFilled } from 'react-icons/tb';
 import { HiOutlineShieldCheck } from 'react-icons/hi';
 
-export default function VehicleCard({ car, index = 0, mounted = true, animationDelay = 30 }) {
+export default function VehicleCard({ car, index = 0, mounted = true, animationDelay = 30, href }) {
+	const cardHref = href || `/vehicles/${car.listingId}`;
+	
 	return (
 		<Link
-			href={`/vehicles/${car.listingId}`}
+			href={cardHref}
 			className="group"
 		>
 			<div

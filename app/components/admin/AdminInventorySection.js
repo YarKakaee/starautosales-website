@@ -2,319 +2,252 @@
 
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import FilterBox from '../Inventory/FilterBox';
-import InventoryCard from '../Inventory/InventoryCard';
-import Pagination from '../Inventory/Pagination';
+import { FaChevronDown } from 'react-icons/fa';
+import VehicleCard from '../VehicleCard';
 
 export default function AdminInventorySection() {
-	const [inventoryData, setInventoryData] = useState([]);
-	const [filteredInventoryData, setFilteredInventoryData] = useState([]);
+	const [cars, setCars] = useState([]);
+	const [filteredCars, setFilteredCars] = useState([]);
+	const [loading, setLoading] = useState(true);
+	const [mounted, setMounted] = useState(false);
+	const [searchTerm, setSearchTerm] = useState('');
 	const [selectedMake, setSelectedMake] = useState('');
-	const [selectedModel, setSelectedModel] = useState('');
 	const [selectedTransmission, setSelectedTransmission] = useState('');
 	const [selectedBodyStyle, setSelectedBodyStyle] = useState('');
-	const [selectedYear, setSelectedYear] = useState('');
-	const [selectedMaxPrice, setSelectedMaxPrice] = useState('');
-	const [selectedMaxMileage, setSelectedMaxMileage] = useState('');
-	const [selectedSortOption, setSelectedSortOption] = useState('');
-	const [currentPage, setCurrentPage] = useState(1);
-	const pageSize = 6;
+	const [sortBy, setSortBy] = useState('newest');
 
 	useEffect(() => {
-		async function fetchAllCars() {
+		async function fetchCars() {
 			try {
 				const response = await axios.get('/api/getAllCars');
-				const data = response.data;
-				setInventoryData(data.cars);
-				setFilteredInventoryData(data.cars);
+				// Show all cars in admin (including sold ones)
+				const allCars = response.data.cars || [];
+				setCars(allCars);
+				setFilteredCars(allCars);
 			} catch (error) {
-				console.error('Error fetching all cars:', error);
+				console.error('Error fetching cars:', error);
+			} finally {
+				setLoading(false);
+				setTimeout(() => setMounted(true), 100);
 			}
 		}
-
-		fetchAllCars();
+		fetchCars();
 	}, []);
 
-	const handleSearch = () => {
-		const filteredData = inventoryData.filter((car) => {
-			if (selectedMake && car.make !== selectedMake) {
-				return false;
-			}
-			if (selectedModel && car.model !== selectedModel) {
-				return false;
-			}
-			if (
-				selectedTransmission &&
-				car.transmission !== selectedTransmission
-			) {
-				return false;
-			}
-			if (selectedBodyStyle && car.body !== selectedBodyStyle) {
-				return false;
-			}
+	useEffect(() => {
+		let filtered = [...cars];
 
-			if (selectedYear) {
-				const year = car.year;
-				switch (selectedYear) {
-					case 'Released before 2000':
-						if (year >= 2000) {
-							return false;
-						}
-						break;
-					case '2001 - 2005':
-						if (year < 2001 || year > 2005) {
-							return false;
-						}
-						break;
-					case '2006 - 2010':
-						if (year < 2006 || year > 2010) {
-							return false;
-						}
-						break;
-					case '2011 - 2015':
-						if (year < 2011 || year > 2015) {
-							return false;
-						}
-						break;
-					case '2016 - 2020':
-						if (year < 2016 || year > 2020) {
-							return false;
-						}
-						break;
-					case 'Released in 2021 and later':
-						if (year < 2021) {
-							return false;
-						}
-						break;
-					default:
-						break;
-				}
-			}
+		// Search filter
+		if (searchTerm) {
+			const term = searchTerm.toLowerCase();
+			filtered = filtered.filter(
+				(car) =>
+					car.make.toLowerCase().includes(term) ||
+					car.model.toLowerCase().includes(term) ||
+					car.year.toString().includes(term)
+			);
+		}
 
-			if (selectedMaxPrice) {
-				const price = car.price;
-				switch (selectedMaxPrice) {
-					case '$5,000':
-						if (price > 5000) {
-							return false;
-						}
-						break;
-					case '$10,000':
-						if (price > 10000) {
-							return false;
-						}
-						break;
-					case '$20,000':
-						if (price > 20000) {
-							return false;
-						}
-						break;
-					case '$30,000':
-						if (price > 30000) {
-							return false;
-						}
-						break;
-					case '$40,000':
-						if (price > 40000) {
-							return false;
-						}
-						break;
-					case '$50,000':
-						if (price > 50000) {
-							return false;
-						}
-						break;
-					default:
-						break;
-				}
-			}
+		// Make filter
+		if (selectedMake) {
+			filtered = filtered.filter((car) => car.make === selectedMake);
+		}
 
-			if (selectedMaxMileage) {
-				const mileage = car.mileage;
-				switch (selectedMaxMileage) {
-					case '25000':
-						if (mileage > 25000) {
-							return false;
-						}
-						break;
-					case '50000':
-						if (mileage > 50000) {
-							return false;
-						}
-						break;
-					case '100000':
-						if (mileage > 100000) {
-							return false;
-						}
-						break;
-					case '150000':
-						if (mileage > 150000) {
-							return false;
-						}
-						break;
-					case '200000':
-						if (mileage > 200000) {
-							return false;
-						}
-						break;
-					case '250000':
-						if (mileage > 250000) {
-							return false;
-						}
-						break;
-					default:
-						break;
-				}
-			}
-			return true;
-		});
+		// Transmission filter
+		if (selectedTransmission) {
+			filtered = filtered.filter(
+				(car) => car.transmission === selectedTransmission
+			);
+		}
 
-		setFilteredInventoryData(filteredData);
-		setCurrentPage(1);
-	};
+		// Body style filter
+		if (selectedBodyStyle) {
+			filtered = filtered.filter((car) => car.body === selectedBodyStyle);
+		}
 
-	const handleSortChange = (e) => {
-		const sortOption = e.target.value;
-		setSelectedSortOption(sortOption);
-
-		let sortedData = [...filteredInventoryData];
-
-		switch (sortOption) {
-			case 'priceAsc':
-				sortedData.sort((a, b) => a.price - b.price);
+		// Sort
+		switch (sortBy) {
+			case 'newest':
+				filtered.sort((a, b) => b.year - a.year);
 				break;
-			case 'priceDesc':
-				sortedData.sort((a, b) => b.price - a.price);
+			case 'oldest':
+				filtered.sort((a, b) => a.year - b.year);
 				break;
-			case 'yearAsc':
-				sortedData.sort((a, b) => b.year - a.year);
+			case 'priceLow':
+				filtered.sort((a, b) => a.price - b.price);
 				break;
-			case 'yearDesc':
-				sortedData.sort((a, b) => a.year - b.year);
+			case 'priceHigh':
+				filtered.sort((a, b) => b.price - a.price);
 				break;
 			default:
 				break;
 		}
 
-		setFilteredInventoryData(sortedData);
-		setCurrentPage(1);
+		setFilteredCars(filtered);
+	}, [cars, searchTerm, selectedMake, selectedTransmission, selectedBodyStyle, sortBy]);
+
+	const uniqueMakes = [...new Set(cars.map((car) => car.make))].sort();
+	const uniqueTransmissions = [
+		...new Set(cars.map((car) => car.transmission)),
+	].sort();
+	const uniqueBodyStyles = [...new Set(cars.map((car) => car.body))].sort();
+
+	const resetFilters = () => {
+		setSearchTerm('');
+		setSelectedMake('');
+		setSelectedTransmission('');
+		setSelectedBodyStyle('');
+		setSortBy('newest');
 	};
 
-	const indexOfLastCar = currentPage * pageSize;
-	const indexOfFirstCar = indexOfLastCar - pageSize;
-	const currentItems = filteredInventoryData.slice(
-		indexOfFirstCar,
-		indexOfLastCar
-	);
-
-	const paginate = (pageNumber) => setCurrentPage(pageNumber);
+	if (loading) {
+		return (
+			<section className="py-12 bg-white">
+				<div className="max-w-7xl mx-auto px-6 lg:px-8">
+					<div className="text-center text-gray-400">Loading...</div>
+				</div>
+			</section>
+		);
+	}
 
 	return (
-		<div>
-			<section className="px-4 sm:px-6 md:px-24 lg:px-32 xl:px-48 2xl:px-64 pt-6 pb-16 bg-lwhite text-dblue -mt-96">
-				<div className="flex flex-col lg:flex-row">
-					<div className="mx-auto lg:ml-0">
-						<FilterBox
-							selectedMake={selectedMake}
-							setSelectedMake={setSelectedMake}
-							selectedModel={selectedModel}
-							setSelectedModel={setSelectedModel}
-							selectedTransmission={selectedTransmission}
-							setSelectedTransmission={setSelectedTransmission}
-							selectedBodyStyle={selectedBodyStyle}
-							setSelectedBodyStyle={setSelectedBodyStyle}
-							selectedYear={selectedYear}
-							setSelectedYear={setSelectedYear}
-							selectedMaxPrice={selectedMaxPrice}
-							setSelectedMaxPrice={setSelectedMaxPrice}
-							selectedMaxMileage={selectedMaxMileage}
-							setSelectedMaxMileage={setSelectedMaxMileage}
-							onSearch={handleSearch}
+		<section className="py-12 bg-white">
+			<div className="max-w-7xl mx-auto px-6 lg:px-8">
+				{/* Filters */}
+				<div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center mb-8">
+					{/* Search */}
+					<div className="flex-1 w-full lg:max-w-sm">
+						<input
+							type="text"
+							placeholder="Search..."
+							value={searchTerm}
+							onChange={(e) => setSearchTerm(e.target.value)}
+							className="w-full px-4 py-2.5 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-dblue focus:border-dblue transition-all duration-200 text-sm"
 						/>
 					</div>
-					<div className="w-full flex flex-col lg:ml-12">
-						<div className="flex flex-row justify-between mt-12 lg:mt-7 gap-5">
-							<h1 className="xl:text-lg font-medium mb-10">
-								{filteredInventoryData.length === 0 ? (
-									<p>
-										No cars found with the applied filters.
-									</p>
-								) : filteredInventoryData.length > pageSize ? (
-									<>
-										Showing{' '}
-										<strong>
-											{indexOfFirstCar + 1} -{' '}
-											{Math.min(
-												indexOfLastCar,
-												filteredInventoryData.length
-											)}{' '}
-										</strong>
-										of{' '}
-										<strong>
-											{filteredInventoryData.length}
-										</strong>{' '}
-										vehicles
-									</>
-								) : (
-									<>
-										Showing{' '}
-										<strong>
-											{filteredInventoryData.length}
-										</strong>{' '}
-										vehicle
-										{filteredInventoryData.length !== 1 &&
-											's'}
-									</>
-								)}
-							</h1>
-							<div>
-								<h3 className="-mt-5 font-medium text-base">
-									Sort By
-								</h3>
-								<select
-									className="w-full rounded-md bg-white ring-lwhite ring-1 p-2 transition ease-in-out hover:drop-shadow-lg cursor-pointer text-sm"
-									value={selectedSortOption}
-									onChange={handleSortChange}
-								>
-									<option value="">Default</option>
-									<option value="priceAsc">
-										Price (Low to High)
+
+					{/* Filters Row */}
+					<div className="flex flex-wrap gap-3 items-center">
+						<div className="relative">
+							<select
+								value={selectedMake}
+								onChange={(e) => setSelectedMake(e.target.value)}
+								className="px-3 pr-8 py-2.5 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-dblue focus:border-dblue transition-all duration-200 text-sm bg-white appearance-none cursor-pointer"
+							>
+								<option value="">All Makes</option>
+								{uniqueMakes.map((make) => (
+									<option key={make} value={make}>
+										{make}
 									</option>
-									<option value="priceDesc">
-										Price (High to Low)
-									</option>
-									<option value="yearAsc">
-										Year (New to Old)
-									</option>
-									<option value="yearDesc">
-										Year (Old to New)
-									</option>
-								</select>
-							</div>
+								))}
+							</select>
+							<FaChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
 						</div>
 
-						{currentItems.map((car) => (
-							<InventoryCard
-								key={car.stockId}
-								car={car}
-								view="admin"
-							/>
-						))}
+						<div className="relative">
+							<select
+								value={selectedTransmission}
+								onChange={(e) =>
+									setSelectedTransmission(e.target.value)
+								}
+								className="px-3 pr-8 py-2.5 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-dblue focus:border-dblue transition-all duration-200 text-sm bg-white appearance-none cursor-pointer"
+							>
+								<option value="">Transmission</option>
+								{uniqueTransmissions.map((trans) => (
+									<option key={trans} value={trans}>
+										{trans}
+									</option>
+								))}
+							</select>
+							<FaChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
+						</div>
 
-						{filteredInventoryData.length > pageSize && (
-							<Pagination
-								currentPage={currentPage}
-								totalPages={Math.ceil(
-									filteredInventoryData.length / pageSize
-								)}
-								onPageChange={paginate}
-								view="admin"
-							/>
+						<div className="relative">
+							<select
+								value={selectedBodyStyle}
+								onChange={(e) =>
+									setSelectedBodyStyle(e.target.value)
+								}
+								className="px-3 pr-8 py-2.5 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-dblue focus:border-dblue transition-all duration-200 text-sm bg-white appearance-none cursor-pointer"
+							>
+								<option value="">Body Style</option>
+								{uniqueBodyStyles.map((body) => (
+									<option key={body} value={body}>
+										{body}
+									</option>
+								))}
+							</select>
+							<FaChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
+						</div>
+
+						<div className="relative">
+							<select
+								value={sortBy}
+								onChange={(e) => setSortBy(e.target.value)}
+								className="px-3 pr-8 py-2.5 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-dblue focus:border-dblue transition-all duration-200 text-sm bg-white appearance-none cursor-pointer"
+							>
+								<option value="newest">Newest</option>
+								<option value="oldest">Oldest</option>
+								<option value="priceLow">Price: Low</option>
+								<option value="priceHigh">Price: High</option>
+							</select>
+							<FaChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
+						</div>
+
+						{(searchTerm ||
+							selectedMake ||
+							selectedTransmission ||
+							selectedBodyStyle ||
+							sortBy !== 'newest') && (
+							<button
+								onClick={resetFilters}
+								className="px-3 py-2.5 text-sm text-gray-600 hover:text-dblue transition-colors duration-200"
+							>
+								Reset
+							</button>
 						)}
 					</div>
 				</div>
-			</section>
-		</div>
+
+				{/* Results Count */}
+				{filteredCars.length > 0 && (
+					<div className="mb-8 pb-4 border-b border-gray-100">
+						<div className="text-sm text-gray-500">
+							{filteredCars.length}{' '}
+							{filteredCars.length === 1 ? 'vehicle' : 'vehicles'}
+						</div>
+					</div>
+				)}
+
+				{/* Inventory Grid */}
+				{filteredCars.length === 0 ? (
+					<div className="text-center py-20">
+						<p className="text-lg text-gray-400 mb-4">
+							No vehicles found.
+						</p>
+						<button
+							onClick={resetFilters}
+							className="px-6 py-2.5 text-sm text-dblue hover:text-gray-700 transition-colors duration-200"
+						>
+							Clear filters
+						</button>
+					</div>
+				) : (
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
+						{filteredCars.map((car, index) => (
+							<VehicleCard
+								key={car.listingId}
+								car={car}
+								index={index}
+								mounted={mounted}
+								animationDelay={30}
+								href={`/admin/addvehicle/${car.listingId}`}
+							/>
+						))}
+					</div>
+				)}
+			</div>
+		</section>
 	);
 }
 

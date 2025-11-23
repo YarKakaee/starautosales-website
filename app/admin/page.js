@@ -9,7 +9,7 @@ export const metadata = {
 
 export default function AdminPage() {
 	return (
-		<main className="bg-lwhite">
+		<main className="bg-white min-h-screen">
 			<AdminDashboard />
 			<AdminInventory />
 		</main>

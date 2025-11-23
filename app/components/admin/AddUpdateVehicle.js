@@ -330,10 +330,6 @@ export default function AddUpdateVehicle({ car }) {
 
 	return (
 		<div>
-			<h1 className="text-2xl font-bold mb-4">
-				{car ? 'Update Vehicle' : 'Add Vehicle'}
-			</h1>
-
 			<form
 				className="max-w-2xl mx-auto lg:mx-0 rounded-md drop-shadow-[1px_1px_20px_rgba(0,0,0,0.5)] bg-white p-6 mt-8 mb-20"
 				onSubmit={handleSubmit(onSubmit)}

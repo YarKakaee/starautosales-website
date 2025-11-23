@@ -4,14 +4,17 @@ import { createClient } from '@/lib/supabase-client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { FaPlus, FaSignOutAlt, FaSignInAlt } from 'react-icons/fa';
 
 export default function AdminDashboard() {
 	const [user, setUser] = useState(null);
 	const [loading, setLoading] = useState(true);
+	const [mounted, setMounted] = useState(false);
 	const router = useRouter();
 	const supabase = createClient();
 
 	useEffect(() => {
+		setMounted(true);
 		const getUser = async () => {
 			const {
 				data: { user },
@@ -39,8 +42,12 @@ export default function AdminDashboard() {
 
 	if (loading) {
 		return (
-			<section className="px-4 sm:px-6 md:px-24 lg:px-32 xl:px-48 2xl:px-64 pb-6 bg-lwhite text-dblue pt-40">
-				<div>Loading...</div>
+			<section className="pt-32 pb-16 bg-dblue text-white">
+				<div className="max-w-7xl mx-auto px-6 lg:px-8">
+					<div className="text-center">
+						<p className="text-white/80">Loading...</p>
+					</div>
+				</div>
 			</section>
 		);
 	}
@@ -48,34 +55,79 @@ export default function AdminDashboard() {
 	const isAuthorized = user?.email === 'starautosalesinfo@gmail.com';
 
 	return (
-		<section className="px-4 sm:px-6 md:px-24 lg:px-32 xl:px-48 2xl:px-64 pb-6 bg-lwhite text-dblue pt-40">
-			<div>
-				<div className="sm:flex justify-between items-center mb-96">
-					<h1 className="text-3xl mt-5 mb-3 md:my-4 font-bold 2xl:text-4xl">
-						Admin Dashboard
-					</h1>
+		<section className="pt-32 pb-16 bg-dblue text-white relative overflow-hidden">
+			{/* Gradient overlays */}
+			<div className="absolute inset-0 bg-gradient-to-b from-dblue via-dblue to-dblue/95" />
+			<div className="absolute inset-0 bg-gradient-to-r from-dblue/90 via-transparent to-dblue/80" />
+			<div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.05),transparent_70%)]" />
+			<div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(0,0,0,0.1),transparent_70%)]" />
 
-					<div className="flex space-x-4">
-						{isAuthorized && (
-							<button className="bg-dblue text-lwhite py-2 px-6 rounded-md text-sm sm:text-md font-semibold transition duration-300 uppercase drop-shadow-[1px_1px_20px_rgba(0,0,0,0.2)] hover:drop-shadow-[1px_1px_20px_rgba(0,0,0,0.5)] ease-out">
-								<Link href="/admin/addvehicle">Add Vehicle</Link>
-							</button>
-						)}
-						{user && (
-							<button
-								onClick={handleSignOut}
-								className="bg-lred text-lwhite py-2 px-6 rounded-md text-sm sm:text-md font-semibold transition duration-300 uppercase drop-shadow-[1px_1px_20px_rgba(0,0,0,0.2)] hover:drop-shadow-[1px_1px_20px_rgba(0,0,0,0.5)] ease-out"
-							>
-								Sign Out
-							</button>
-						)}
-						{!user && (
-							<button className="bg-dblue text-lwhite py-3 px-8 rounded-md text-md font-semibold transition duration-300 uppercase drop-shadow-[1px_1px_20px_rgba(0,0,0,0.2)] hover:drop-shadow-[1px_1px_20px_rgba(0,0,0,0.5)] ease-out">
-								<Link href="/auth/login">Login</Link>
-							</button>
-						)}
+			<div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
+				<div
+					className={`transition-all duration-1000 ${
+						mounted
+							? 'opacity-100 translate-y-0'
+							: 'opacity-0 translate-y-10'
+					}`}
+				>
+					<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+						<div>
+							<h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-2">
+								Admin Dashboard
+							</h1>
+							{user && (
+								<p className="text-white/70 text-sm">
+									Logged in as: {user.email}
+								</p>
+							)}
+						</div>
+
+						<div className="flex flex-wrap gap-3">
+							{isAuthorized && (
+								<Link
+									href="/admin/addvehicle"
+									className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white px-6 py-3 rounded-md font-medium transition-all duration-300 hover:bg-white/20 hover:border-white/30"
+								>
+									<FaPlus className="w-4 h-4" />
+									Add Vehicle
+								</Link>
+							)}
+							{user && (
+								<button
+									onClick={handleSignOut}
+									className="inline-flex items-center gap-2 bg-lred text-white px-6 py-3 rounded-md font-medium transition-all duration-300 hover:bg-lred/90"
+								>
+									<FaSignOutAlt className="w-4 h-4" />
+									Sign Out
+								</button>
+							)}
+							{!user && (
+								<Link
+									href="/auth/login"
+									className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white px-6 py-3 rounded-md font-medium transition-all duration-300 hover:bg-white/20 hover:border-white/30"
+								>
+									<FaSignInAlt className="w-4 h-4" />
+									Login
+								</Link>
+							)}
+						</div>
 					</div>
 				</div>
+			</div>
+			{/* Curved transition */}
+			<div className="absolute bottom-0 left-0 right-0 h-12">
+				<svg
+					className="absolute bottom-0 w-full h-full"
+					viewBox="0 0 1440 120"
+					preserveAspectRatio="none"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<path
+						d="M0,120 L0,60 Q720,0 1440,60 L1440,120 Z"
+						fill="white"
+					/>
+				</svg>
 			</div>
 		</section>
 	);
