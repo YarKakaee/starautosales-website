@@ -15,16 +15,12 @@ function LoginForm() {
 		setLoading(true);
 		const redirectTo = searchParams.get('redirect') || '/admin';
 
-		// Use environment variable for production, fallback to window.location.origin for development
-		const siteUrl =
-			process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
-
 		const { error } = await supabase.auth.signInWithOAuth({
 			provider: 'google',
 			options: {
-				redirectTo: `${siteUrl}/auth/callback?redirect=${encodeURIComponent(
-					redirectTo
-				)}`,
+				redirectTo: `${
+					window.location.origin
+				}/auth/callback?redirect=${encodeURIComponent(redirectTo)}`,
 			},
 		});
 
