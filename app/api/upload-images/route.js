@@ -16,10 +16,21 @@ export async function POST(request) {
 		const imageFiles = {};
 		for (let i = 1; i <= 10; i++) {
 			const file = formData.get(`image${i}`);
-			if (file instanceof File && file.size > 0) {
-				imageFiles[`image${i}`] = file;
+			// More lenient check for mobile - file might be a Blob or File
+			if (file && (file instanceof File || file instanceof Blob)) {
+				// Ensure file has content
+				if (file.size > 0) {
+					imageFiles[`image${i}`] = file;
+					console.log(`Found image${i}: size=${file.size}, type=${file.type || 'unknown'}, name=${file.name || 'unknown'}`);
+				} else {
+					console.warn(`image${i} has zero size, skipping`);
+				}
+			} else if (file) {
+				console.warn(`image${i} is not a File or Blob, type: ${typeof file}`);
 			}
 		}
+
+		console.log(`Total images found: ${Object.keys(imageFiles).length}`);
 
 		if (Object.keys(imageFiles).length === 0) {
 			return NextResponse.json(
@@ -33,22 +44,39 @@ export async function POST(request) {
 		const basePath = `cars/${listingId}`;
 
 		for (const [key, file] of Object.entries(imageFiles)) {
-			const fileExtension = file.name.split('.').pop().toLowerCase();
+			// Handle file extension - mobile might not have proper file names
+			let fileExtension = 'jpg'; // default
+			if (file.name && file.name.includes('.')) {
+				fileExtension = file.name.split('.').pop().toLowerCase();
+			} else if (file.type) {
+				// Try to infer from MIME type
+				const mimeToExt = {
+					'image/jpeg': 'jpg',
+					'image/jpg': 'jpg',
+					'image/png': 'png',
+					'image/webp': 'webp',
+					'image/heic': 'heic',
+					'image/heif': 'heif',
+				};
+				fileExtension = mimeToExt[file.type.toLowerCase()] || 'jpg';
+			}
+			
 			const path = `${basePath}/${key}.${fileExtension}`;
 
 			try {
-				console.log(`Uploading ${key} to path: ${path}`);
+				console.log(`Uploading ${key} to path: ${path}, size: ${file.size}, type: ${file.type || 'unknown'}`);
 				const result = await uploadImage(file, path);
 				console.log(`Uploaded ${key} successfully. URL: ${result.url}`);
 				
 				// Validate URL format
 				if (result.url && result.url.includes('supabase.co/storage/v1/object/public/car-images')) {
-				uploadedUrls[key] = result.url;
+					uploadedUrls[key] = result.url;
 				} else {
 					console.error(`Invalid URL format for ${key}:`, result.url);
 				}
 			} catch (error) {
 				console.error(`Error uploading ${key}:`, error);
+				console.error(`Error details - message: ${error.message}, stack: ${error.stack}`);
 				// Continue with other images even if one fails
 			}
 		}

@@ -59,6 +59,7 @@ export default function AddUpdateVehicle({ car }) {
 
 	const handleMultipleImages = (e) => {
 		const files = Array.from(e.target.files || []);
+		console.log(`Multiple images selected: ${files.length} files`);
 		
 		if (files.length === 0) return;
 
@@ -95,9 +96,20 @@ export default function AddUpdateVehicle({ car }) {
 				return;
 			}
 
+			// Ensure file is properly stored - create a new File object if needed
+			// This helps with mobile browsers that might not properly handle File objects
+			let fileToStore = file;
+			if (!(file instanceof File)) {
+				// If it's a Blob, convert to File
+				fileToStore = new File([file], file.name || `image${availableSlots[index]}.jpg`, {
+					type: file.type || 'image/jpeg',
+					lastModified: file.lastModified || Date.now(),
+				});
+			}
+
 			const slotNumber = availableSlots[index];
-			const preview = createImagePreview(file);
-			newFiles[`image${slotNumber}`] = file;
+			const preview = createImagePreview(fileToStore);
+			newFiles[`image${slotNumber}`] = fileToStore;
 			newPreviews[`image${slotNumber}`] = preview;
 		});
 
@@ -117,7 +129,17 @@ export default function AddUpdateVehicle({ car }) {
 
 	const handleImageChange = (e, imageNumber) => {
 		const file = e.target.files[0];
-		if (!file) return;
+		if (!file) {
+			console.log('No file selected');
+			return;
+		}
+
+		console.log(`File selected for image${imageNumber}:`, {
+			name: file.name,
+			size: file.size,
+			type: file.type,
+			lastModified: file.lastModified,
+		});
 
 		const validation = validateImageFile(file);
 		if (!validation.valid) {
@@ -125,10 +147,21 @@ export default function AddUpdateVehicle({ car }) {
 			return;
 		}
 
-		const preview = createImagePreview(file);
+		// Ensure file is properly stored - create a new File object if needed
+		// This helps with mobile browsers that might not properly handle File objects
+		let fileToStore = file;
+		if (!(file instanceof File)) {
+			// If it's a Blob, convert to File
+			fileToStore = new File([file], file.name || `image${imageNumber}.jpg`, {
+				type: file.type || 'image/jpeg',
+				lastModified: file.lastModified || Date.now(),
+			});
+		}
+
+		const preview = createImagePreview(fileToStore);
 		setImageFiles((prev) => ({
 			...prev,
-			[`image${imageNumber}`]: file,
+			[`image${imageNumber}`]: fileToStore,
 		}));
 		setImagePreviews((prev) => ({
 			...prev,
@@ -155,10 +188,11 @@ export default function AddUpdateVehicle({ car }) {
 
 	const uploadImages = async (listingId) => {
 		const filesToUpload = Object.entries(imageFiles).filter(
-			([_, file]) => file instanceof File
+			([_, file]) => file instanceof File || file instanceof Blob
 		);
 
 		if (filesToUpload.length === 0) {
+			console.log('No files to upload');
 			return {};
 		}
 
@@ -167,22 +201,38 @@ export default function AddUpdateVehicle({ car }) {
 
 		try {
 			const formData = new FormData();
+			
+			// Log files before appending for debugging
+			console.log(`Preparing to upload ${filesToUpload.length} files`);
 			filesToUpload.forEach(([key, file]) => {
-				formData.append(key, file);
+				console.log(`Adding ${key}: size=${file.size}, type=${file.type || 'unknown'}, name=${file.name || 'unknown'}`);
+				// Ensure we're appending the file with the correct key
+				// On mobile, sometimes we need to explicitly set the filename
+				if (file instanceof File) {
+					formData.append(key, file, file.name || `${key}.jpg`);
+				} else {
+					// If it's a Blob, convert it to a File
+					const blobFile = new File([file], file.name || `${key}.jpg`, { type: file.type || 'image/jpeg' });
+					formData.append(key, blobFile);
+				}
 			});
-			formData.append('listingId', listingId || 'temp');
+			formData.append('listingId', String(listingId || 'temp'));
 
+			console.log('Sending FormData to /api/upload-images');
 			const response = await fetch('/api/upload-images', {
 				method: 'POST',
 				body: formData,
+				// Don't set Content-Type header - let browser set it with boundary
 			});
 
 			if (!response.ok) {
-				const errorData = await response.json();
+				const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+				console.error('Upload failed:', errorData);
 				throw new Error(errorData.error || 'Failed to upload images');
 			}
 
 			const data = await response.json();
+			console.log('Upload response:', data);
 			uploadedUrls = data.urls || {};
 
 			// Clean up preview URLs
@@ -193,6 +243,7 @@ export default function AddUpdateVehicle({ car }) {
 			});
 		} catch (error) {
 			console.error('Error uploading images:', error);
+			console.error('Error stack:', error.stack);
 			throw error;
 		} finally {
 			setUploadingImages(false);
