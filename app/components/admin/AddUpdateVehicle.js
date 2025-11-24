@@ -218,9 +218,13 @@ export default function AddUpdateVehicle({ car }) {
 			// Log files before appending for debugging
 			console.log(`Preparing to upload ${filesToUpload.length} files`);
 
+			// Process images sequentially on mobile to avoid timeouts and memory issues
 			// Convert all images to JPEG before uploading (especially important for HEIC/iPhone images)
-			// Use Promise.allSettled to handle individual failures gracefully
-			const conversionPromises = filesToUpload.map(async ([key, file]) => {
+			console.log(
+				`Processing ${filesToUpload.length} images sequentially for mobile compatibility`
+			);
+
+			for (const [key, file] of filesToUpload) {
 				try {
 					console.log(
 						`Processing ${key}: size=${file.size}, type=${
@@ -228,69 +232,97 @@ export default function AddUpdateVehicle({ car }) {
 						}, name=${file.name || 'unknown'}`
 					);
 
-					// Convert to JPEG - this handles HEIC, HEIF, and ensures consistent format
-					// Set a timeout for conversion (5 seconds) to prevent hanging on mobile
-					const conversionPromise = convertImageToJpeg(file);
-					const timeoutPromise = new Promise((_, reject) =>
-						setTimeout(() => reject(new Error('Conversion timeout')), 5000)
-					);
+					// For mobile, use a shorter timeout and simpler conversion
+					// Set a timeout for conversion (2 seconds) to prevent hanging on mobile
+					let jpegFile;
+					try {
+						const conversionPromise = convertImageToJpeg(file);
+						const timeoutPromise = new Promise((_, reject) =>
+							setTimeout(
+								() => reject(new Error('Conversion timeout')),
+								2000
+							)
+						);
+						jpegFile = await Promise.race([
+							conversionPromise,
+							timeoutPromise,
+						]);
+						console.log(
+							`Converted ${key} to JPEG: size=${jpegFile.size}, type=${jpegFile.type}`
+						);
+					} catch (conversionError) {
+						console.warn(
+							`Conversion failed or timed out for ${key}, using original with JPEG metadata:`,
+							conversionError.message
+						);
+						// Fallback: use original file but ensure it has proper name/type
+						if (!(file instanceof File)) {
+							jpegFile = new File([file], `${key}.jpg`, {
+								type: 'image/jpeg',
+								lastModified: file.lastModified || Date.now(),
+							});
+						} else if (!file.name || !file.name.endsWith('.jpg')) {
+							// Ensure file has .jpg extension
+							const baseName =
+								(file.name || key).replace(/\.[^/.]+$/, '') ||
+								key;
+							jpegFile = new File([file], `${baseName}.jpg`, {
+								type: file.type || 'image/jpeg',
+								lastModified: file.lastModified || Date.now(),
+							});
+						} else {
+							jpegFile = file;
+						}
+					}
 
-					const jpegFile = await Promise.race([conversionPromise, timeoutPromise]);
+					// Append immediately after processing to avoid memory issues
+					formData.append(key, jpegFile, `${key}.jpg`);
 					console.log(
-						`Converted ${key} to JPEG: size=${jpegFile.size}, type=${jpegFile.type}`
+						`Added ${key} to FormData: size=${jpegFile.size}`
 					);
 
-					return { key, file: jpegFile, success: true };
-				} catch (conversionError) {
-					console.warn(
-						`Error converting ${key} to JPEG, using original:`,
-						conversionError
-					);
-					// Fallback: use original file but ensure it has proper name/type
-					let fileToUse = file;
-					if (!(file instanceof File)) {
-						fileToUse = new File([file], `${key}.jpg`, {
+					// Small delay between files on mobile to prevent overwhelming the system
+					if (filesToUpload.length > 1) {
+						await new Promise((resolve) =>
+							setTimeout(resolve, 100)
+						);
+					}
+				} catch (error) {
+					console.error(`Failed to process ${key}:`, error);
+					// Still try to add the file with basic metadata
+					try {
+						const fallbackFile = new File([file], `${key}.jpg`, {
 							type: 'image/jpeg',
 							lastModified: file.lastModified || Date.now(),
 						});
-					} else if (!file.name || !file.name.endsWith('.jpg')) {
-						// Ensure file has .jpg extension
-						const baseName = file.name.replace(/\.[^/.]+$/, '') || key;
-						fileToUse = new File([file], `${baseName}.jpg`, {
-							type: file.type || 'image/jpeg',
-							lastModified: file.lastModified || Date.now(),
-						});
+						formData.append(key, fallbackFile, `${key}.jpg`);
+						console.log(`Added ${key} as fallback`);
+					} catch (fallbackError) {
+						console.error(
+							`Could not add ${key} even as fallback:`,
+							fallbackError
+						);
 					}
-					return { key, file: fileToUse, success: false };
 				}
-			});
-
-			const conversionResults = await Promise.allSettled(conversionPromises);
-			
-			// Append all files to FormData
-			conversionResults.forEach((result) => {
-				if (result.status === 'fulfilled') {
-					const { key, file } = result.value;
-					formData.append(key, file, `${key}.jpg`);
-					console.log(`Added ${key} to FormData: ${file.name}, size=${file.size}`);
-				} else {
-					console.error(`Failed to process file:`, result.reason);
-				}
-			});
+			}
 
 			formData.append('listingId', String(listingId || 'temp'));
 
 			// Verify FormData has files before sending
 			console.log('FormData prepared, sending to /api/upload-images');
 			console.log(`Listing ID: ${listingId}`);
-			
+
 			const response = await fetch('/api/upload-images', {
 				method: 'POST',
 				body: formData,
 				// Don't set Content-Type header - let browser set it with boundary
 			});
 
-			console.log('Upload response status:', response.status, response.statusText);
+			console.log(
+				'Upload response status:',
+				response.status,
+				response.statusText
+			);
 
 			if (!response.ok) {
 				const errorText = await response.text();
@@ -308,13 +340,21 @@ export default function AddUpdateVehicle({ car }) {
 			const data = await response.json();
 			console.log('Upload response data:', data);
 			uploadedUrls = data.urls || {};
-			
+
 			if (Object.keys(uploadedUrls).length === 0) {
-				console.warn('No URLs returned from upload, but request succeeded');
-				throw new Error('Images were uploaded but no URLs were returned');
+				console.warn(
+					'No URLs returned from upload, but request succeeded'
+				);
+				throw new Error(
+					'Images were uploaded but no URLs were returned'
+				);
 			}
-			
-			console.log(`Successfully uploaded ${Object.keys(uploadedUrls).length} images`);
+
+			console.log(
+				`Successfully uploaded ${
+					Object.keys(uploadedUrls).length
+				} images`
+			);
 
 			// Clean up preview URLs
 			Object.values(imagePreviews).forEach((preview) => {
@@ -458,10 +498,12 @@ export default function AddUpdateVehicle({ car }) {
 							}
 
 							console.log(
-								`Sending PATCH request to /api/${numericListingId} with ${Object.keys(validUrls).length} image URLs:`,
+								`Sending PATCH request to /api/${numericListingId} with ${
+									Object.keys(validUrls).length
+								} image URLs:`,
 								validUrls
 							);
-							
+
 							try {
 								const updateResponse = await axios.patch(
 									`/api/${numericListingId}`,
@@ -471,22 +513,41 @@ export default function AddUpdateVehicle({ car }) {
 									'Update successful:',
 									updateResponse.data
 								);
-								
+
 								// Verify images were actually saved
-								const savedImages = Object.keys(validUrls).filter(key => 
-									updateResponse.data[key] && 
-									updateResponse.data[key].includes('supabase.co')
+								const savedImages = Object.keys(
+									validUrls
+								).filter(
+									(key) =>
+										updateResponse.data[key] &&
+										updateResponse.data[key].includes(
+											'supabase.co'
+										)
 								);
-								console.log(`Verified ${savedImages.length} images saved to database`);
-								
+								console.log(
+									`Verified ${savedImages.length} images saved to database`
+								);
+
 								if (savedImages.length === 0) {
-									console.error('WARNING: Images uploaded but not saved to database!');
-									alert('Images were uploaded but may not have been saved. Please check the car and re-upload if needed.');
+									console.error(
+										'WARNING: Images uploaded but not saved to database!'
+									);
+									alert(
+										'Images were uploaded but may not have been saved. Please check the car and re-upload if needed.'
+									);
 								}
 							} catch (patchError) {
-								console.error('PATCH request failed:', patchError);
-								console.error('PATCH error response:', patchError.response?.data);
-								throw new Error(`Failed to update car with images: ${patchError.message}`);
+								console.error(
+									'PATCH request failed:',
+									patchError
+								);
+								console.error(
+									'PATCH error response:',
+									patchError.response?.data
+								);
+								throw new Error(
+									`Failed to update car with images: ${patchError.message}`
+								);
 							}
 						} else {
 							console.error('No valid image URLs to update');
