@@ -213,15 +213,9 @@ export default function AddUpdateVehicle({ car }) {
 		let uploadedUrls = {};
 
 		try {
-			const formData = new FormData();
-
-			// Log files before appending for debugging
-			console.log(`Preparing to upload ${filesToUpload.length} files`);
-
-			// Process images sequentially on mobile to avoid timeouts and memory issues
-			// Convert all images to JPEG before uploading (especially important for HEIC/iPhone images)
+			// Upload images one at a time on mobile for better reliability
 			console.log(
-				`Processing ${filesToUpload.length} images sequentially for mobile compatibility`
+				`Uploading ${filesToUpload.length} images one at a time for mobile compatibility`
 			);
 
 			for (const [key, file] of filesToUpload) {
@@ -275,16 +269,53 @@ export default function AddUpdateVehicle({ car }) {
 						}
 					}
 
-					// Append immediately after processing to avoid memory issues
-					formData.append(key, jpegFile, `${key}.jpg`);
-					console.log(
-						`Added ${key} to FormData: size=${jpegFile.size}`
+					// Upload this single image immediately (one at a time for mobile)
+					const singleFormData = new FormData();
+					singleFormData.append(key, jpegFile, `${key}.jpg`);
+					singleFormData.append(
+						'listingId',
+						String(listingId || 'temp')
 					);
 
-					// Small delay between files on mobile to prevent overwhelming the system
+					console.log(`Uploading ${key} to server...`);
+					const response = await fetch('/api/upload-images', {
+						method: 'POST',
+						body: singleFormData,
+					});
+
+					if (!response.ok) {
+						const errorText = await response.text();
+						console.error(`Upload failed for ${key}:`, errorText);
+						let errorData;
+						try {
+							errorData = JSON.parse(errorText);
+						} catch {
+							errorData = { error: errorText || 'Unknown error' };
+						}
+						throw new Error(
+							errorData.error || `Failed to upload ${key}`
+						);
+					}
+
+					const data = await response.json();
+					console.log(`Upload response for ${key}:`, data);
+
+					if (data.urls && data.urls[key]) {
+						uploadedUrls[key] = data.urls[key];
+						console.log(
+							`Successfully uploaded ${key}: ${data.urls[key]}`
+						);
+					} else {
+						console.warn(
+							`No URL returned for ${key} in response:`,
+							data
+						);
+					}
+
+					// Small delay between uploads on mobile to prevent overwhelming the system
 					if (filesToUpload.length > 1) {
 						await new Promise((resolve) =>
-							setTimeout(resolve, 100)
+							setTimeout(resolve, 200)
 						);
 					}
 				} catch (error) {
@@ -306,54 +337,15 @@ export default function AddUpdateVehicle({ car }) {
 				}
 			}
 
-			formData.append('listingId', String(listingId || 'temp'));
-
-			// Verify FormData has files before sending
-			console.log('FormData prepared, sending to /api/upload-images');
-			console.log(`Listing ID: ${listingId}`);
-
-			const response = await fetch('/api/upload-images', {
-				method: 'POST',
-				body: formData,
-				// Don't set Content-Type header - let browser set it with boundary
-			});
-
-			console.log(
-				'Upload response status:',
-				response.status,
-				response.statusText
-			);
-
-			if (!response.ok) {
-				const errorText = await response.text();
-				console.error('Upload failed - response text:', errorText);
-				let errorData;
-				try {
-					errorData = JSON.parse(errorText);
-				} catch {
-					errorData = { error: errorText || 'Unknown error' };
-				}
-				console.error('Upload failed - parsed error:', errorData);
-				throw new Error(errorData.error || 'Failed to upload images');
-			}
-
-			const data = await response.json();
-			console.log('Upload response data:', data);
-			uploadedUrls = data.urls || {};
-
 			if (Object.keys(uploadedUrls).length === 0) {
-				console.warn(
-					'No URLs returned from upload, but request succeeded'
-				);
-				throw new Error(
-					'Images were uploaded but no URLs were returned'
-				);
+				console.warn('No images were successfully uploaded');
+				throw new Error('Failed to upload any images');
 			}
 
 			console.log(
 				`Successfully uploaded ${
 					Object.keys(uploadedUrls).length
-				} images`
+				} out of ${filesToUpload.length} images`
 			);
 
 			// Clean up preview URLs
