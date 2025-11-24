@@ -6,14 +6,17 @@ import { FaTachometerAlt } from 'react-icons/fa';
 import { TbManualGearboxFilled } from 'react-icons/tb';
 import { HiOutlineShieldCheck } from 'react-icons/hi';
 
-export default function VehicleCard({ car, index = 0, mounted = true, animationDelay = 30, href }) {
+export default function VehicleCard({
+	car,
+	index = 0,
+	mounted = true,
+	animationDelay = 30,
+	href,
+}) {
 	const cardHref = href || `/vehicles/${car.listingId}`;
-	
+
 	return (
-		<Link
-			href={cardHref}
-			className="group"
-		>
+		<Link href={cardHref} className="group">
 			<div
 				className={`bg-white border border-gray-100 rounded-lg overflow-hidden transition-all duration-300 ${
 					mounted
@@ -21,7 +24,10 @@ export default function VehicleCard({ car, index = 0, mounted = true, animationD
 						: 'opacity-0 translate-y-4'
 				} hover:shadow-lg hover:-translate-y-1`}
 				style={{
-					transitionDelay: `${Math.min(index * animationDelay, 300)}ms`,
+					transitionDelay: `${Math.min(
+						index * animationDelay,
+						300
+					)}ms`,
 				}}
 			>
 				{/* Image Container */}
@@ -55,7 +61,10 @@ export default function VehicleCard({ car, index = 0, mounted = true, animationD
 				{/* Content */}
 				<div className="p-6">
 					{/* Title */}
-					<h3 className="text-xl font-bold text-dblue mb-3 group-hover:text-gray-700 transition-colors">
+					<h3
+						className="text-xl font-bold text-dblue mb-3 group-hover:text-gray-700 transition-colors truncate"
+						title={`${car.year} ${car.make} ${car.model}`}
+					>
 						{car.year} {car.make} {car.model}
 					</h3>
 
@@ -63,9 +72,7 @@ export default function VehicleCard({ car, index = 0, mounted = true, animationD
 					<div className="grid grid-cols-2 gap-4 mb-4">
 						<div className="flex items-center gap-2 text-sm text-gray-600">
 							<FaTachometerAlt className="w-4 h-4 text-gray-400 shrink-0" />
-							<span>
-								{car.mileage.toLocaleString()} km
-							</span>
+							<span>{car.mileage.toLocaleString()} km</span>
 						</div>
 						<div className="flex items-center gap-2 text-sm text-gray-600 justify-end">
 							<TbManualGearboxFilled className="w-4 h-4 text-gray-400 shrink-0" />
@@ -101,4 +108,3 @@ export default function VehicleCard({ car, index = 0, mounted = true, animationD
 		</Link>
 	);
 }
-
