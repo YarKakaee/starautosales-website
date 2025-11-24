@@ -44,23 +44,9 @@ export async function POST(request) {
 		const basePath = `cars/${listingId}`;
 
 		for (const [key, file] of Object.entries(imageFiles)) {
-			// Handle file extension - mobile might not have proper file names
-			let fileExtension = 'jpg'; // default
-			if (file.name && file.name.includes('.')) {
-				fileExtension = file.name.split('.').pop().toLowerCase();
-			} else if (file.type) {
-				// Try to infer from MIME type
-				const mimeToExt = {
-					'image/jpeg': 'jpg',
-					'image/jpg': 'jpg',
-					'image/png': 'png',
-					'image/webp': 'webp',
-					'image/heic': 'heic',
-					'image/heif': 'heif',
-				};
-				fileExtension = mimeToExt[file.type.toLowerCase()] || 'jpg';
-			}
-			
+			// Always use .jpg extension since we convert all images to JPEG on client side
+			// This ensures compatibility, especially for iPhone HEIC images
+			const fileExtension = 'jpg';
 			const path = `${basePath}/${key}.${fileExtension}`;
 
 			try {

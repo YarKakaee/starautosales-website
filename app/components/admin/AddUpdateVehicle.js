@@ -9,6 +9,7 @@ import {
 	createImagePreview,
 	revokeImagePreview,
 	validateImageFile,
+	convertImageToJpeg,
 } from '@/lib/imageUtils';
 
 export default function AddUpdateVehicle({ car }) {
@@ -60,12 +61,14 @@ export default function AddUpdateVehicle({ car }) {
 	const handleMultipleImages = (e) => {
 		const files = Array.from(e.target.files || []);
 		console.log(`Multiple images selected: ${files.length} files`);
-		
+
 		if (files.length === 0) return;
 
 		// Check if more than 10 images
 		if (files.length > 10) {
-			alert(`You can only upload up to 10 images. You selected ${files.length}. Please select 10 or fewer.`);
+			alert(
+				`You can only upload up to 10 images. You selected ${files.length}. Please select 10 or fewer.`
+			);
 			e.target.value = ''; // Reset input
 			return;
 		}
@@ -80,7 +83,9 @@ export default function AddUpdateVehicle({ car }) {
 
 		// Check if we have enough slots
 		if (availableSlots.length < files.length) {
-			alert(`You can only upload ${availableSlots.length} more image(s). Please remove some existing images first.`);
+			alert(
+				`You can only upload ${availableSlots.length} more image(s). Please remove some existing images first.`
+			);
 			e.target.value = ''; // Reset input
 			return;
 		}
@@ -101,10 +106,14 @@ export default function AddUpdateVehicle({ car }) {
 			let fileToStore = file;
 			if (!(file instanceof File)) {
 				// If it's a Blob, convert to File
-				fileToStore = new File([file], file.name || `image${availableSlots[index]}.jpg`, {
-					type: file.type || 'image/jpeg',
-					lastModified: file.lastModified || Date.now(),
-				});
+				fileToStore = new File(
+					[file],
+					file.name || `image${availableSlots[index]}.jpg`,
+					{
+						type: file.type || 'image/jpeg',
+						lastModified: file.lastModified || Date.now(),
+					}
+				);
 			}
 
 			const slotNumber = availableSlots[index];
@@ -152,10 +161,14 @@ export default function AddUpdateVehicle({ car }) {
 		let fileToStore = file;
 		if (!(file instanceof File)) {
 			// If it's a Blob, convert to File
-			fileToStore = new File([file], file.name || `image${imageNumber}.jpg`, {
-				type: file.type || 'image/jpeg',
-				lastModified: file.lastModified || Date.now(),
-			});
+			fileToStore = new File(
+				[file],
+				file.name || `image${imageNumber}.jpg`,
+				{
+					type: file.type || 'image/jpeg',
+					lastModified: file.lastModified || Date.now(),
+				}
+			);
 		}
 
 		const preview = createImagePreview(fileToStore);
@@ -201,21 +214,44 @@ export default function AddUpdateVehicle({ car }) {
 
 		try {
 			const formData = new FormData();
-			
+
 			// Log files before appending for debugging
 			console.log(`Preparing to upload ${filesToUpload.length} files`);
-			filesToUpload.forEach(([key, file]) => {
-				console.log(`Adding ${key}: size=${file.size}, type=${file.type || 'unknown'}, name=${file.name || 'unknown'}`);
-				// Ensure we're appending the file with the correct key
-				// On mobile, sometimes we need to explicitly set the filename
-				if (file instanceof File) {
-					formData.append(key, file, file.name || `${key}.jpg`);
-				} else {
-					// If it's a Blob, convert it to a File
-					const blobFile = new File([file], file.name || `${key}.jpg`, { type: file.type || 'image/jpeg' });
-					formData.append(key, blobFile);
+
+			// Convert all images to JPEG before uploading (especially important for HEIC/iPhone images)
+			for (const [key, file] of filesToUpload) {
+				try {
+					console.log(
+						`Processing ${key}: size=${file.size}, type=${
+							file.type || 'unknown'
+						}, name=${file.name || 'unknown'}`
+					);
+
+					// Convert to JPEG - this handles HEIC, HEIF, and ensures consistent format
+					const jpegFile = await convertImageToJpeg(file);
+					console.log(
+						`Converted ${key} to JPEG: size=${jpegFile.size}, type=${jpegFile.type}`
+					);
+
+					// Append with proper filename
+					formData.append(key, jpegFile, `${key}.jpg`);
+				} catch (conversionError) {
+					console.error(
+						`Error converting ${key} to JPEG:`,
+						conversionError
+					);
+					// Fallback: try to upload original file
+					if (file instanceof File) {
+						formData.append(key, file, file.name || `${key}.jpg`);
+					} else {
+						const blobFile = new File([file], `${key}.jpg`, {
+							type: 'image/jpeg',
+						});
+						formData.append(key, blobFile);
+					}
 				}
-			});
+			}
+
 			formData.append('listingId', String(listingId || 'temp'));
 
 			console.log('Sending FormData to /api/upload-images');
@@ -226,7 +262,9 @@ export default function AddUpdateVehicle({ car }) {
 			});
 
 			if (!response.ok) {
-				const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+				const errorData = await response
+					.json()
+					.catch(() => ({ error: 'Unknown error' }));
 				console.error('Upload failed:', errorData);
 				throw new Error(errorData.error || 'Failed to upload images');
 			}
@@ -252,8 +290,7 @@ export default function AddUpdateVehicle({ car }) {
 		return uploadedUrls;
 	};
 
-	const isNumber = (value) =>
-		!isNaN(value) || 'This field must be a number';
+	const isNumber = (value) => !isNaN(value) || 'This field must be a number';
 
 	const onSubmit = handleSubmit(async (data) => {
 		setSubmitting(true);
@@ -278,7 +315,7 @@ export default function AddUpdateVehicle({ car }) {
 					// For editing: only include existing images (HTTP URLs), not blob URLs
 					// Blob URLs are temporary preview URLs, not actual image URLs
 					if (imagePreviews[key].startsWith('http')) {
-					imageData[key] = imagePreviews[key];
+						imageData[key] = imagePreviews[key];
 					}
 				}
 				// For new cars: don't include blob URLs - images will be uploaded after creation
@@ -298,60 +335,123 @@ export default function AddUpdateVehicle({ car }) {
 				await axios.patch(`/api/${car.listingId}`, vehicleData);
 			} else {
 				// For new cars, create first, then upload images
-				const response = await axios.post('/api/createCar', vehicleData);
+				const response = await axios.post(
+					'/api/createCar',
+					vehicleData
+				);
 				listingId = response.data.listingId;
 
-				console.log('Car created, listingId:', listingId, 'Type:', typeof listingId);
+				console.log(
+					'Car created, listingId:',
+					listingId,
+					'Type:',
+					typeof listingId
+				);
 				console.log('Full response:', response.data);
 
 				// Now upload images with the actual listingId
 				if (Object.keys(imageFiles).length > 0) {
 					try {
-						console.log('Starting image upload for listingId:', listingId);
+						console.log(
+							'Starting image upload for listingId:',
+							listingId
+						);
 						uploadedImageUrls = await uploadImages(listingId);
-						console.log('Uploaded image URLs received:', uploadedImageUrls);
-						console.log('Number of URLs:', Object.keys(uploadedImageUrls).length);
+						console.log(
+							'Uploaded image URLs received:',
+							uploadedImageUrls
+						);
+						console.log(
+							'Number of URLs:',
+							Object.keys(uploadedImageUrls).length
+						);
 
 						// Validate URLs before updating
 						const validUrls = {};
-						Object.entries(uploadedImageUrls).forEach(([key, url]) => {
-							if (url && typeof url === 'string' && url.includes('supabase.co/storage/v1/object/public/car-images')) {
-								validUrls[key] = url;
-								console.log(`Valid URL for ${key}:`, url);
-							} else {
-								console.error(`Invalid URL for ${key}:`, url);
+						Object.entries(uploadedImageUrls).forEach(
+							([key, url]) => {
+								if (
+									url &&
+									typeof url === 'string' &&
+									url.includes(
+										'supabase.co/storage/v1/object/public/car-images'
+									)
+								) {
+									validUrls[key] = url;
+									console.log(`Valid URL for ${key}:`, url);
+								} else {
+									console.error(
+										`Invalid URL for ${key}:`,
+										url
+									);
+								}
 							}
-						});
+						);
 
 						console.log('Valid URLs to update:', validUrls);
-						console.log('Valid URL count:', Object.keys(validUrls).length);
+						console.log(
+							'Valid URL count:',
+							Object.keys(validUrls).length
+						);
 
 						if (Object.keys(validUrls).length > 0) {
 							// Ensure listingId is a number
-							const numericListingId = typeof listingId === 'string' ? parseInt(listingId, 10) : Number(listingId);
-							
-							console.log('Numeric listing ID:', numericListingId, 'Type:', typeof numericListingId);
-							
+							const numericListingId =
+								typeof listingId === 'string'
+									? parseInt(listingId, 10)
+									: Number(listingId);
+
+							console.log(
+								'Numeric listing ID:',
+								numericListingId,
+								'Type:',
+								typeof numericListingId
+							);
+
 							if (!numericListingId || isNaN(numericListingId)) {
-								throw new Error(`Invalid listing ID: ${listingId} (parsed as: ${numericListingId})`);
+								throw new Error(
+									`Invalid listing ID: ${listingId} (parsed as: ${numericListingId})`
+								);
 							}
-							
-							console.log(`Sending PATCH request to /api/${numericListingId} with data:`, validUrls);
-							const updateResponse = await axios.patch(`/api/${numericListingId}`, validUrls);
-							console.log('Update successful:', updateResponse.data);
+
+							console.log(
+								`Sending PATCH request to /api/${numericListingId} with data:`,
+								validUrls
+							);
+							const updateResponse = await axios.patch(
+								`/api/${numericListingId}`,
+								validUrls
+							);
+							console.log(
+								'Update successful:',
+								updateResponse.data
+							);
 						} else {
 							console.warn('No valid image URLs to update');
-							alert('Images were uploaded but no valid URLs were returned. Please check the console for details.');
+							alert(
+								'Images were uploaded but no valid URLs were returned. Please check the console for details.'
+							);
 						}
 					} catch (uploadError) {
-						console.error('Error uploading/updating images:', uploadError);
+						console.error(
+							'Error uploading/updating images:',
+							uploadError
+						);
 						console.error('Error response:', uploadError.response);
-						console.error('Error status:', uploadError.response?.status);
-						console.error('Error details:', uploadError.response?.data);
+						console.error(
+							'Error status:',
+							uploadError.response?.status
+						);
+						console.error(
+							'Error details:',
+							uploadError.response?.data
+						);
 						console.error('Error message:', uploadError.message);
 						// Don't fail the whole operation if image upload fails
 						// The car was already created successfully
-						alert('Car created successfully, but there was an error updating images. You can edit the car to add images manually.');
+						alert(
+							'Car created successfully, but there was an error updating images. You can edit the car to add images manually.'
+						);
 					}
 				}
 			}
@@ -412,7 +512,9 @@ export default function AddUpdateVehicle({ car }) {
 							})}
 						/>
 						{errors.make && (
-							<p className="text-red-500">{errors.make.message}</p>
+							<p className="text-red-500">
+								{errors.make.message}
+							</p>
 						)}
 
 						<input
@@ -425,7 +527,9 @@ export default function AddUpdateVehicle({ car }) {
 							})}
 						/>
 						{errors.price && (
-							<p className="text-red-500">{errors.price.message}</p>
+							<p className="text-red-500">
+								{errors.price.message}
+							</p>
 						)}
 
 						<input
@@ -451,7 +555,9 @@ export default function AddUpdateVehicle({ car }) {
 							})}
 						/>
 						{errors.eColor && (
-							<p className="text-red-500">{errors.eColor.message}</p>
+							<p className="text-red-500">
+								{errors.eColor.message}
+							</p>
 						)}
 
 						<input
@@ -463,7 +569,9 @@ export default function AddUpdateVehicle({ car }) {
 							})}
 						/>
 						{errors.body && (
-							<p className="text-red-500">{errors.body.message}</p>
+							<p className="text-red-500">
+								{errors.body.message}
+							</p>
 						)}
 
 						<input
@@ -476,7 +584,9 @@ export default function AddUpdateVehicle({ car }) {
 							})}
 						/>
 						{errors.seats && (
-							<p className="text-red-500">{errors.seats.message}</p>
+							<p className="text-red-500">
+								{errors.seats.message}
+							</p>
 						)}
 
 						<input
@@ -488,7 +598,9 @@ export default function AddUpdateVehicle({ car }) {
 							})}
 						/>
 						{errors.engine && (
-							<p className="text-red-500">{errors.engine.message}</p>
+							<p className="text-red-500">
+								{errors.engine.message}
+							</p>
 						)}
 					</div>
 					<div>
@@ -501,7 +613,9 @@ export default function AddUpdateVehicle({ car }) {
 							})}
 						/>
 						{errors.model && (
-							<p className="text-red-500">{errors.model.message}</p>
+							<p className="text-red-500">
+								{errors.model.message}
+							</p>
 						)}
 
 						<input
@@ -514,7 +628,9 @@ export default function AddUpdateVehicle({ car }) {
 							})}
 						/>
 						{errors.year && (
-							<p className="text-red-500">{errors.year.message}</p>
+							<p className="text-red-500">
+								{errors.year.message}
+							</p>
 						)}
 
 						<input
@@ -527,7 +643,9 @@ export default function AddUpdateVehicle({ car }) {
 							})}
 						/>
 						{errors.mileage && (
-							<p className="text-red-500">{errors.mileage.message}</p>
+							<p className="text-red-500">
+								{errors.mileage.message}
+							</p>
 						)}
 
 						<input
@@ -539,7 +657,9 @@ export default function AddUpdateVehicle({ car }) {
 							})}
 						/>
 						{errors.iColor && (
-							<p className="text-red-500">{errors.iColor.message}</p>
+							<p className="text-red-500">
+								{errors.iColor.message}
+							</p>
 						)}
 
 						<input
@@ -551,7 +671,9 @@ export default function AddUpdateVehicle({ car }) {
 							})}
 						/>
 						{errors.fuel && (
-							<p className="text-red-500">{errors.fuel.message}</p>
+							<p className="text-red-500">
+								{errors.fuel.message}
+							</p>
 						)}
 
 						<input
@@ -564,7 +686,9 @@ export default function AddUpdateVehicle({ car }) {
 							})}
 						/>
 						{errors.doors && (
-							<p className="text-red-500">{errors.doors.message}</p>
+							<p className="text-red-500">
+								{errors.doors.message}
+							</p>
 						)}
 
 						<input
@@ -618,8 +742,8 @@ export default function AddUpdateVehicle({ car }) {
 								Upload Multiple Images at Once
 							</p>
 							<p className="text-xs text-gray-500 mb-2">
-								Select up to 10 images - they will be automatically assigned to
-								available slots
+								Select up to 10 images - they will be
+								automatically assigned to available slots
 							</p>
 							<input
 								type="file"
@@ -632,7 +756,9 @@ export default function AddUpdateVehicle({ car }) {
 							<button
 								type="button"
 								onClick={() =>
-									document.getElementById('bulk-upload').click()
+									document
+										.getElementById('bulk-upload')
+										.click()
 								}
 								className="bg-dblue text-lwhite py-2 px-6 rounded-md text-sm font-semibold transition duration-300 hover:bg-gray-800"
 							>
@@ -704,4 +830,3 @@ export default function AddUpdateVehicle({ car }) {
 		</div>
 	);
 }
-
