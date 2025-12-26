@@ -411,6 +411,7 @@ export default function AddUpdateVehicle({ car }) {
 				mileage: parseInt(data.mileage, 10),
 				seats: parseInt(data.seats, 10),
 				doors: parseInt(data.doors, 10),
+				sold: Boolean(data.sold),
 				...imageData,
 			};
 
@@ -840,6 +841,26 @@ export default function AddUpdateVehicle({ car }) {
 				{errors.safety && (
 					<p className="text-red-500">{errors.safety.message}</p>
 				)}
+
+				{/* Sold Status Checkbox */}
+				<div className="mb-4 flex items-center gap-3">
+					<input
+						type="checkbox"
+						id="sold"
+						defaultChecked={car?.sold || false}
+						className="w-5 h-5 text-dblue border-gray-300 rounded focus:ring-dblue focus:ring-2 cursor-pointer"
+						{...register('sold', {
+							setValueAs: (value) =>
+								value === true || value === 'on',
+						})}
+					/>
+					<label
+						htmlFor="sold"
+						className="text-sm font-medium text-dblue cursor-pointer"
+					>
+						Mark as Sold
+					</label>
+				</div>
 
 				<h3 className="mt-1 mb-3 font-bold text-center text-lg">
 					Vehicle Images (Upload up to 10 images, 5MB each)
