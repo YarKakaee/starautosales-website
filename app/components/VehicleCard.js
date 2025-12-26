@@ -33,12 +33,23 @@ export default function VehicleCard({
 				{/* Image Container */}
 				<div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
 					{car.image1 ? (
-						<Image
-							src={car.image1}
-							alt={`${car.year} ${car.make} ${car.model}`}
-							fill
-							className="object-cover transition-transform duration-500 group-hover:scale-105"
-						/>
+						<>
+							<Image
+								src={car.image1}
+								alt={`${car.year} ${car.make} ${car.model}`}
+								fill
+								className={`object-cover transition-transform duration-500 group-hover:scale-105 ${
+									car.sold ? 'opacity-40' : ''
+								}`}
+							/>
+							{car.sold && (
+								<div className="absolute inset-0 flex items-center justify-center bg-black/20">
+									<div className="bg-red-600 text-white px-6 py-3 rounded-md font-bold text-lg shadow-lg transform rotate-[-8deg]">
+										SOLD
+									</div>
+								</div>
+							)}
+						</>
 					) : (
 						<div className="w-full h-full flex items-center justify-center">
 							<svg
@@ -61,10 +72,7 @@ export default function VehicleCard({
 				{/* Content */}
 				<div className="p-6">
 					{/* Title */}
-					<h3
-						className="text-xl font-bold text-dblue mb-3 group-hover:text-gray-700 transition-colors truncate"
-						title={`${car.year} ${car.make} ${car.model}`}
-					>
+					<h3 className="text-xl font-bold text-dblue mb-3 group-hover:text-gray-700 transition-colors truncate">
 						{car.year} {car.make} {car.model}
 					</h3>
 

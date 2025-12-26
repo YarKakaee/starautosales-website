@@ -22,7 +22,7 @@ export default function VehiclesPage() {
 			try {
 				const response = await axios.get('/api/getAllCars');
 				const availableCars = (response.data.cars || []).filter(
-					(car) => !car.sold && car.image1
+					(car) => car.image1
 				);
 				setCars(availableCars);
 				setFilteredCars(availableCars);
