@@ -843,6 +843,14 @@ export default function AddUpdateVehicle({ car }) {
 					<p className="text-red-500">{errors.safety.message}</p>
 				)}
 
+				{/* Description Textarea */}
+				<textarea
+					defaultValue={car?.description}
+					className="w-full px-4 py-3 text-sm mb-4 border border-lwhite rounded-md focus:outline-dblue resize-y min-h-[120px]"
+					placeholder="Vehicle Description (e.g., special features, condition, highlights...)"
+					{...register('description')}
+				/>
+
 				{/* Sold Status Checkbox */}
 				<div className="mb-4 flex items-center gap-3">
 					<input

@@ -34,6 +34,7 @@ export default function VehicleDetailClient({ car }) {
 		safety,
 		financingAvailable,
 		sold,
+		description,
 		image1,
 		image2,
 		image3,
@@ -251,6 +252,27 @@ export default function VehicleDetailClient({ car }) {
 											/>
 										</button>
 									))}
+								</div>
+							</div>
+						)}
+
+						{/* Description */}
+						{description && (
+							<div
+								className={`transition-all duration-1000 ${
+									mounted
+										? 'opacity-100 translate-y-0'
+										: 'opacity-0 translate-y-10'
+								}`}
+								style={{ transitionDelay: '300ms' }}
+							>
+								<h2 className="text-2xl font-bold text-dblue mb-4">
+									About This Vehicle
+								</h2>
+								<div className="bg-white border border-gray-100 rounded-lg p-6">
+									<p className="text-gray-700 leading-relaxed whitespace-pre-line">
+										{description}
+									</p>
 								</div>
 							</div>
 						)}
