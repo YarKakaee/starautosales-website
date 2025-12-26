@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { FaTachometerAlt, FaPhone, FaEnvelope, FaCar } from 'react-icons/fa';
+import { FaTachometerAlt, FaPhone, FaEnvelope, FaCar, FaDollarSign } from 'react-icons/fa';
 import { IoColorPalette } from 'react-icons/io5';
 import { LuClipboardList } from 'react-icons/lu';
 import { MdOutlineNumbers } from 'react-icons/md';
@@ -123,11 +123,17 @@ export default function VehicleDetailClient({ car }) {
 						<h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-3">
 							{year} {make} {model}
 						</h1>
-						<div className="flex items-center gap-4 text-white/80">
+						<div className="flex items-center gap-4 text-white/80 flex-wrap">
 							<span className="flex items-center gap-2">
 								<LuClipboardList className="w-4 h-4" />
 								Stock #: SAS{formatStockId(stockId)}
 							</span>
+							{financingAvailable && !sold && (
+								<span className="px-4 py-1.5 bg-lgreen rounded-full text-sm font-semibold text-white flex items-center gap-2 shadow-lg">
+									<FaDollarSign className="w-3.5 h-3.5" />
+									Financing Available
+								</span>
+							)}
 							{sold && (
 								<span className="px-3 py-1 bg-red-600 rounded-full text-sm font-semibold text-white">
 									SOLD
@@ -463,6 +469,14 @@ export default function VehicleDetailClient({ car }) {
 											+ HST
 										</span>
 									</div>
+									{financingAvailable && !sold && (
+										<div className="mt-3 mb-2 px-4 py-2 bg-lgreen/10 border-2 border-lgreen rounded-lg">
+											<div className="flex items-center justify-center gap-2 text-lgreen font-semibold">
+												<FaDollarSign className="w-4 h-4" />
+												<span className="text-base">Financing Available</span>
+											</div>
+										</div>
+									)}
 									{safety && (
 										<div className="flex items-center justify-center gap-1.5 mt-3">
 											<HiOutlineShieldCheck
@@ -483,11 +497,6 @@ export default function VehicleDetailClient({ car }) {
 											>
 												{safety}
 											</span>
-										</div>
-									)}
-									{financingAvailable && (
-										<div className="mt-3 text-sm text-lgreen font-medium">
-											✓ Financing Available
 										</div>
 									)}
 								</div>

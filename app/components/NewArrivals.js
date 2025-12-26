@@ -15,7 +15,7 @@ export default function NewArrivals() {
 			try {
 				const response = await axios.get('/api/findNewArrivals');
 				const availableCars = (response.data.cars || []).filter(
-					(car) => !car.sold && car.image1
+					(car) => car.image1
 				);
 				setCars(availableCars.slice(0, 4));
 			} catch (error) {
