@@ -412,6 +412,7 @@ export default function AddUpdateVehicle({ car }) {
 				seats: parseInt(data.seats, 10),
 				doors: parseInt(data.doors, 10),
 				sold: Boolean(data.sold),
+				financingAvailable: Boolean(data.financingAvailable),
 				...imageData,
 			};
 
@@ -859,6 +860,26 @@ export default function AddUpdateVehicle({ car }) {
 						className="text-sm font-medium text-dblue cursor-pointer"
 					>
 						Mark as Sold
+					</label>
+				</div>
+
+				{/* Financing Available Checkbox */}
+				<div className="mb-4 flex items-center gap-3">
+					<input
+						type="checkbox"
+						id="financingAvailable"
+						defaultChecked={car?.financingAvailable || false}
+						className="w-5 h-5 text-dblue border-gray-300 rounded focus:ring-dblue focus:ring-2 cursor-pointer"
+						{...register('financingAvailable', {
+							setValueAs: (value) =>
+								value === true || value === 'on',
+						})}
+					/>
+					<label
+						htmlFor="financingAvailable"
+						className="text-sm font-medium text-dblue cursor-pointer"
+					>
+						Financing Available
 					</label>
 				</div>
 
