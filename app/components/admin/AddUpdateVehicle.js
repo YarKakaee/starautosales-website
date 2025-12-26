@@ -49,7 +49,7 @@ export default function AddUpdateVehicle({ car }) {
 	useEffect(() => {
 		if (car) {
 			const previews = {};
-			for (let i = 1; i <= 10; i++) {
+			for (let i = 1; i <= 20; i++) {
 				if (car[`image${i}`]) {
 					previews[`image${i}`] = car[`image${i}`];
 				}
@@ -64,10 +64,10 @@ export default function AddUpdateVehicle({ car }) {
 
 		if (files.length === 0) return;
 
-		// Check if more than 10 images
-		if (files.length > 10) {
+		// Check if more than 20 images
+		if (files.length > 20) {
 			alert(
-				`You can only upload up to 10 images. You selected ${files.length}. Please select 10 or fewer.`
+				`You can only upload up to 20 images. You selected ${files.length}. Please select 20 or fewer.`
 			);
 			e.target.value = ''; // Reset input
 			return;
@@ -75,7 +75,7 @@ export default function AddUpdateVehicle({ car }) {
 
 		// Find available slots (starting from 1)
 		const availableSlots = [];
-		for (let i = 1; i <= 10; i++) {
+		for (let i = 1; i <= 20; i++) {
 			if (!imagePreviews[`image${i}`]) {
 				availableSlots.push(i);
 			}
@@ -389,7 +389,7 @@ export default function AddUpdateVehicle({ car }) {
 
 			// Combine form data with image URLs
 			const imageData = {};
-			for (let i = 1; i <= 10; i++) {
+			for (let i = 1; i <= 20; i++) {
 				const key = `image${i}`;
 				// Use uploaded URL if available
 				if (uploadedImageUrls[key]) {
@@ -892,7 +892,7 @@ export default function AddUpdateVehicle({ car }) {
 				</div>
 
 				<h3 className="mt-1 mb-3 font-bold text-center text-lg">
-					Vehicle Images (Upload up to 10 images, 5MB each)
+					Vehicle Images (Upload up to 20 images, 5MB each)
 				</h3>
 
 				{/* Bulk Upload Option */}
@@ -916,7 +916,7 @@ export default function AddUpdateVehicle({ car }) {
 								Upload Multiple Images at Once
 							</p>
 							<p className="text-xs text-gray-500 mb-2">
-								Select up to 10 images - they will be
+								Select up to 20 images - they will be
 								automatically assigned to available slots
 							</p>
 							<input
@@ -947,7 +947,7 @@ export default function AddUpdateVehicle({ car }) {
 					Or upload images one by one below:
 				</p>
 				<div className="grid grid-cols-2 gap-4">
-					{Array.from({ length: 10 }, (_, i) => i + 1).map((num) => {
+					{Array.from({ length: 20 }, (_, i) => i + 1).map((num) => {
 						const imageKey = `image${num}`;
 						const preview = imagePreviews[imageKey];
 						return (

@@ -90,7 +90,7 @@ export async function PATCH(request, { params }) {
 
 		// Clean up the data - remove undefined/null image fields and reject blob URLs
 		const cleanedBody = { ...body };
-		for (let i = 1; i <= 10; i++) {
+		for (let i = 1; i <= 20; i++) {
 			const imageKey = `image${i}`;
 			const imageValue = cleanedBody[imageKey];
 			

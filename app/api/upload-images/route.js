@@ -14,7 +14,7 @@ export async function POST(request) {
 
 		// Get all image files with their keys (image1, image2, etc.)
 		const imageFiles = {};
-		for (let i = 1; i <= 10; i++) {
+		for (let i = 1; i <= 20; i++) {
 			const file = formData.get(`image${i}`);
 			// More lenient check for mobile - file might be a Blob or File
 			if (file && (file instanceof File || file instanceof Blob)) {

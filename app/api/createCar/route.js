@@ -23,7 +23,7 @@ export async function POST(request) {
 		};
 
 		// Remove undefined/null image fields to avoid database issues
-		for (let i = 1; i <= 10; i++) {
+		for (let i = 1; i <= 20; i++) {
 			const imageKey = `image${i}`;
 			if (!cleanedBody[imageKey]) {
 				delete cleanedBody[imageKey];

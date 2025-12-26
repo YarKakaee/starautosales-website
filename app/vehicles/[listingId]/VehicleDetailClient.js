@@ -3,7 +3,13 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { FaTachometerAlt, FaPhone, FaEnvelope, FaCar, FaDollarSign } from 'react-icons/fa';
+import {
+	FaTachometerAlt,
+	FaPhone,
+	FaEnvelope,
+	FaCar,
+	FaDollarSign,
+} from 'react-icons/fa';
 import { IoColorPalette } from 'react-icons/io5';
 import { LuClipboardList } from 'react-icons/lu';
 import { MdOutlineNumbers } from 'react-icons/md';
@@ -45,6 +51,16 @@ export default function VehicleDetailClient({ car }) {
 		image8,
 		image9,
 		image10,
+		image11,
+		image12,
+		image13,
+		image14,
+		image15,
+		image16,
+		image17,
+		image18,
+		image19,
+		image20,
 	} = car;
 
 	// Collect all available images
@@ -59,6 +75,16 @@ export default function VehicleDetailClient({ car }) {
 		image8,
 		image9,
 		image10,
+		image11,
+		image12,
+		image13,
+		image14,
+		image15,
+		image16,
+		image17,
+		image18,
+		image19,
+		image20,
 	].filter((img) => img && img.trim() !== '');
 
 	const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -495,7 +521,9 @@ export default function VehicleDetailClient({ car }) {
 										<div className="mt-3 mb-2 px-4 py-2 bg-lgreen/10 border-2 border-lgreen rounded-lg">
 											<div className="flex items-center justify-center gap-2 text-lgreen font-semibold">
 												<FaDollarSign className="w-4 h-4" />
-												<span className="text-base">Financing Available</span>
+												<span className="text-base">
+													Financing Available
+												</span>
 											</div>
 										</div>
 									)}
