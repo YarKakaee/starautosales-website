@@ -22,6 +22,7 @@ export default function InventoryCard({ car, view }) {
 		eColor,
 		mileage,
 		price,
+		salePrice,
 		image1,
 		vin,
 		sold,
@@ -102,8 +103,8 @@ export default function InventoryCard({ car, view }) {
 					</div>
 				</div>
 				<div className="flex flex-row justify-between mt-5 flex-wrap">
-					<h2 className="pl-1 mt-1 text-2xl text-dblue font-extrabold">
-						$ {price.toLocaleString()}
+					<h2 className={`pl-1 mt-1 text-2xl font-extrabold ${salePrice ? 'text-green-600' : 'text-dblue'}`}>
+						${(salePrice || price).toLocaleString()}
 						<span className="text-base font-normal text-gray-500 ml-1">
 							+HST
 						</span>
@@ -128,4 +129,3 @@ export default function InventoryCard({ car, view }) {
 		</div>
 	);
 }
-

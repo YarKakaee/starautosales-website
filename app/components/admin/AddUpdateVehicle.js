@@ -425,6 +425,7 @@ export default function AddUpdateVehicle({ car }) {
 			const vehicleData = {
 				...data,
 				price: parseInt(data.price, 10),
+				salePrice: data.salePrice ? parseInt(data.salePrice, 10) : null,
 				year: parseInt(data.year, 10),
 				mileage: parseInt(data.mileage, 10),
 				seats: parseInt(data.seats, 10),
@@ -674,6 +675,21 @@ export default function AddUpdateVehicle({ car }) {
 						{errors.price && (
 							<p className="text-red-500">
 								{errors.price.message}
+							</p>
+						)}
+
+						<input
+							defaultValue={car?.salePrice || ''}
+							className="w-full px-4 py-3 text-sm mb-4 border border-lwhite rounded-md focus:outline-dblue"
+							placeholder="Sale Price (optional)"
+							{...register('salePrice', {
+								validate: (value) =>
+									!value || !isNaN(value) || 'This field must be a number',
+							})}
+						/>
+						{errors.salePrice && (
+							<p className="text-red-500">
+								{errors.salePrice.message}
 							</p>
 						)}
 

@@ -64,7 +64,7 @@ export default function WeeklySpecial() {
 				>
 					<div className="flex items-center justify-center gap-4 mb-3">
 						<div className="w-8 h-px bg-white/[0.12]" />
-						<p className="text-[14px] font-medium tracking-[0.3em] uppercase text-white/40">
+						<p className="text-[18px] font-semibold tracking-[0.3em] uppercase text-white/50">
 							Weekly Special
 						</p>
 						<div className="w-8 h-px bg-white/[0.12]" />
@@ -155,12 +155,28 @@ export default function WeeklySpecial() {
 						</div>
 
 						<div className="flex items-center gap-8 shrink-0">
-							<p className="text-3xl lg:text-4xl font-semibold text-white tracking-tight">
-								${car.price.toLocaleString()}
-								<span className="text-sm font-normal text-white/20 ml-1.5">
-									+HST
-								</span>
-							</p>
+							<div>
+								{car.salePrice ? (
+									<>
+										<p className="text-base text-white/30 line-through">
+											${car.price.toLocaleString()}
+										</p>
+										<p className="text-3xl lg:text-4xl font-semibold text-green-400 tracking-tight">
+											${car.salePrice.toLocaleString()}
+											<span className="text-sm font-normal text-white/20 ml-1.5">
+												+HST
+											</span>
+										</p>
+									</>
+								) : (
+									<p className="text-3xl lg:text-4xl font-semibold text-white tracking-tight">
+										${car.price.toLocaleString()}
+										<span className="text-sm font-normal text-white/20 ml-1.5">
+											+HST
+										</span>
+									</p>
+								)}
+							</div>
 							<Link
 								href={`/vehicles/${car.listingId}`}
 								className="group flex items-center gap-2 px-6 py-3 rounded-full border border-white/[0.12] text-sm font-medium text-white/80 hover:text-white hover:border-white/25 hover:bg-white/[0.04] transition-all duration-300"
@@ -207,12 +223,28 @@ export default function WeeklySpecial() {
 						</div>
 
 						<div className="flex items-center justify-between">
-							<p className="text-3xl font-semibold text-white tracking-tight">
-								${car.price.toLocaleString()}
-								<span className="text-sm font-normal text-white/20 ml-1.5">
-									+HST
-								</span>
-							</p>
+							<div>
+								{car.salePrice ? (
+									<>
+										<p className="text-sm text-white/30 line-through">
+											${car.price.toLocaleString()}
+										</p>
+										<p className="text-3xl font-semibold text-green-400 tracking-tight">
+											${car.salePrice.toLocaleString()}
+											<span className="text-sm font-normal text-white/20 ml-1.5">
+												+HST
+											</span>
+										</p>
+									</>
+								) : (
+									<p className="text-3xl font-semibold text-white tracking-tight">
+										${car.price.toLocaleString()}
+										<span className="text-sm font-normal text-white/20 ml-1.5">
+											+HST
+										</span>
+									</p>
+								)}
+							</div>
 							<Link
 								href={`/vehicles/${car.listingId}`}
 								className="group flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/[0.12] text-sm font-medium text-white/80 hover:text-white hover:border-white/25 transition-all duration-300"

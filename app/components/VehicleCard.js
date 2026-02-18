@@ -90,8 +90,8 @@ export default function VehicleCard({
 
 					{/* Price and Safety */}
 					<div className="pt-4 border-t border-gray-100 flex items-end justify-between">
-						<p className="text-2xl font-bold text-dblue">
-							${car.price.toLocaleString()}
+						<p className={`text-2xl font-bold ${car.salePrice ? 'text-green-600' : 'text-dblue'}`}>
+							${(car.salePrice || car.price).toLocaleString()}
 							<span className="text-[15px] font-medium text-gray-500 ml-1">
 								+ HST
 							</span>

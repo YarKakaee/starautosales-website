@@ -32,6 +32,7 @@ export default function VehicleDetailClient({ car }) {
 		iColor,
 		mileage,
 		price,
+		salePrice,
 		engine,
 		fuel,
 		seats,
@@ -511,12 +512,26 @@ export default function VehicleDetailClient({ car }) {
 									<div className="text-sm text-gray-500 mb-2">
 										Price
 									</div>
-									<div className="text-4xl font-extrabold text-dblue mb-1">
-										${price.toLocaleString()}
-										<span className="text-xl font-normal text-gray-500 ml-1">
-											+ HST
-										</span>
-									</div>
+									{salePrice ? (
+										<>
+											<div className="text-lg text-gray-400 line-through mb-1">
+												${price.toLocaleString()}
+											</div>
+											<div className="text-4xl font-extrabold text-green-600 mb-1">
+												${salePrice.toLocaleString()}
+												<span className="text-xl font-normal text-gray-500 ml-1">
+													+ HST
+												</span>
+											</div>
+										</>
+									) : (
+										<div className="text-4xl font-extrabold text-dblue mb-1">
+											${price.toLocaleString()}
+											<span className="text-xl font-normal text-gray-500 ml-1">
+												+ HST
+											</span>
+										</div>
+									)}
 									{financingAvailable && !sold && (
 										<div className="mt-3 mb-2 px-4 py-2 bg-lgreen/10 border-2 border-lgreen rounded-lg">
 											<div className="flex items-center justify-center gap-2 text-lgreen font-semibold">
