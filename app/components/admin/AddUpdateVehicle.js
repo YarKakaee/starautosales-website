@@ -67,7 +67,7 @@ export default function AddUpdateVehicle({ car }) {
 		// Check if more than 20 images
 		if (files.length > 20) {
 			alert(
-				`You can only upload up to 20 images. You selected ${files.length}. Please select 20 or fewer.`
+				`You can only upload up to 20 images. You selected ${files.length}. Please select 20 or fewer.`,
 			);
 			e.target.value = ''; // Reset input
 			return;
@@ -84,7 +84,7 @@ export default function AddUpdateVehicle({ car }) {
 		// Check if we have enough slots
 		if (availableSlots.length < files.length) {
 			alert(
-				`You can only upload ${availableSlots.length} more image(s). Please remove some existing images first.`
+				`You can only upload ${availableSlots.length} more image(s). Please remove some existing images first.`,
 			);
 			e.target.value = ''; // Reset input
 			return;
@@ -112,7 +112,7 @@ export default function AddUpdateVehicle({ car }) {
 					{
 						type: file.type || 'image/jpeg',
 						lastModified: file.lastModified || Date.now(),
-					}
+					},
 				);
 			}
 
@@ -167,7 +167,7 @@ export default function AddUpdateVehicle({ car }) {
 				{
 					type: file.type || 'image/jpeg',
 					lastModified: file.lastModified || Date.now(),
-				}
+				},
 			);
 		}
 
@@ -201,7 +201,7 @@ export default function AddUpdateVehicle({ car }) {
 
 	const uploadImages = async (listingId) => {
 		const filesToUpload = Object.entries(imageFiles).filter(
-			([_, file]) => file instanceof File || file instanceof Blob
+			([_, file]) => file instanceof File || file instanceof Blob,
 		);
 
 		if (filesToUpload.length === 0) {
@@ -213,147 +213,166 @@ export default function AddUpdateVehicle({ car }) {
 		let uploadedUrls = {};
 
 		try {
-			const formData = new FormData();
+			// Chunk the files to avoid payload too large errors
+			// Vercel serverless functions have a 4.5MB limit
+			// 3 images per chunk is a safe bet (assuming ~1-1.5MB per image after optimization)
+			const CHUNK_SIZE = 3;
+			const chunks = [];
 
-			// Log files before appending for debugging
-			console.log(`Preparing to upload ${filesToUpload.length} files`);
+			for (let i = 0; i < filesToUpload.length; i += CHUNK_SIZE) {
+				chunks.push(filesToUpload.slice(i, i + CHUNK_SIZE));
+			}
 
-			// Process images sequentially on mobile to avoid timeouts and memory issues
-			// Convert all images to JPEG before uploading (especially important for HEIC/iPhone images)
 			console.log(
-				`Processing ${filesToUpload.length} images sequentially for mobile compatibility`
+				`Split ${filesToUpload.length} images into ${chunks.length} chunks`,
 			);
 
-			for (const [key, file] of filesToUpload) {
-				try {
-					console.log(
-						`Processing ${key}: size=${file.size}, type=${
-							file.type || 'unknown'
-						}, name=${file.name || 'unknown'}`
-					);
+			// Process chunks sequentially
+			for (let i = 0; i < chunks.length; i++) {
+				const chunk = chunks[i];
+				const chunkIndex = i + 1;
+				console.log(
+					`Processing chunk ${chunkIndex}/${chunks.length} with ${chunk.length} images`,
+				);
 
-					// For mobile, use a shorter timeout and simpler conversion
-					// Set a timeout for conversion (2 seconds) to prevent hanging on mobile
-					let jpegFile;
+				const formData = new FormData();
+
+				// Process images in this chunk sequentially
+				for (const [key, file] of chunk) {
 					try {
-						const conversionPromise = convertImageToJpeg(file);
-						const timeoutPromise = new Promise((_, reject) =>
-							setTimeout(
-								() => reject(new Error('Conversion timeout')),
-								2000
-							)
-						);
-						jpegFile = await Promise.race([
-							conversionPromise,
-							timeoutPromise,
-						]);
 						console.log(
-							`Converted ${key} to JPEG: size=${jpegFile.size}, type=${jpegFile.type}`
+							`Processing ${key}: size=${file.size}, type=${
+								file.type || 'unknown'
+							}, name=${file.name || 'unknown'}`,
 						);
-					} catch (conversionError) {
-						console.warn(
-							`Conversion failed or timed out for ${key}, using original with JPEG metadata:`,
-							conversionError.message
-						);
-						// Fallback: use original file but ensure it has proper name/type
-						if (!(file instanceof File)) {
-							jpegFile = new File([file], `${key}.jpg`, {
-								type: 'image/jpeg',
-								lastModified: file.lastModified || Date.now(),
-							});
-						} else if (!file.name || !file.name.endsWith('.jpg')) {
-							// Ensure file has .jpg extension
-							const baseName =
-								(file.name || key).replace(/\.[^/.]+$/, '') ||
-								key;
-							jpegFile = new File([file], `${baseName}.jpg`, {
-								type: file.type || 'image/jpeg',
-								lastModified: file.lastModified || Date.now(),
-							});
-						} else {
-							jpegFile = file;
+
+						// For mobile, use a shorter timeout and simpler conversion
+						let jpegFile;
+						try {
+							const conversionPromise = convertImageToJpeg(file);
+							const timeoutPromise = new Promise((_, reject) =>
+								setTimeout(
+									() =>
+										reject(new Error('Conversion timeout')),
+									2000,
+								),
+							);
+							jpegFile = await Promise.race([
+								conversionPromise,
+								timeoutPromise,
+							]);
+						} catch (conversionError) {
+							console.warn(
+								`Conversion failed or timed out for ${key}, using original with JPEG metadata:`,
+								conversionError.message,
+							);
+							// Fallback logic
+							if (!(file instanceof File)) {
+								jpegFile = new File([file], `${key}.jpg`, {
+									type: 'image/jpeg',
+									lastModified:
+										file.lastModified || Date.now(),
+								});
+							} else if (
+								!file.name ||
+								!file.name.endsWith('.jpg')
+							) {
+								const baseName =
+									(file.name || key).replace(
+										/\.[^/.]+$/,
+										'',
+									) || key;
+								jpegFile = new File([file], `${baseName}.jpg`, {
+									type: file.type || 'image/jpeg',
+									lastModified:
+										file.lastModified || Date.now(),
+								});
+							} else {
+								jpegFile = file;
+							}
+						}
+
+						formData.append(key, jpegFile, `${key}.jpg`);
+
+						// Small delay within chunk
+						if (chunk.length > 1) {
+							await new Promise((resolve) =>
+								setTimeout(resolve, 50),
+							);
+						}
+					} catch (error) {
+						console.error(`Failed to process ${key}:`, error);
+						// Try fallback
+						try {
+							const fallbackFile = new File(
+								[file],
+								`${key}.jpg`,
+								{
+									type: 'image/jpeg',
+									lastModified:
+										file.lastModified || Date.now(),
+								},
+							);
+							formData.append(key, fallbackFile, `${key}.jpg`);
+						} catch (fallbackError) {
+							console.error(
+								`Could not add ${key} even as fallback:`,
+								fallbackError,
+							);
 						}
 					}
-
-					// Append immediately after processing to avoid memory issues
-					formData.append(key, jpegFile, `${key}.jpg`);
-					console.log(
-						`Added ${key} to FormData: size=${jpegFile.size}`
-					);
-
-					// Small delay between files on mobile to prevent overwhelming the system
-					if (filesToUpload.length > 1) {
-						await new Promise((resolve) =>
-							setTimeout(resolve, 100)
-						);
-					}
-				} catch (error) {
-					console.error(`Failed to process ${key}:`, error);
-					// Still try to add the file with basic metadata
-					try {
-						const fallbackFile = new File([file], `${key}.jpg`, {
-							type: 'image/jpeg',
-							lastModified: file.lastModified || Date.now(),
-						});
-						formData.append(key, fallbackFile, `${key}.jpg`);
-						console.log(`Added ${key} as fallback`);
-					} catch (fallbackError) {
-						console.error(
-							`Could not add ${key} even as fallback:`,
-							fallbackError
-						);
-					}
 				}
-			}
 
-			formData.append('listingId', String(listingId || 'temp'));
+				formData.append('listingId', String(listingId || 'temp'));
 
-			// Verify FormData has files before sending
-			console.log('FormData prepared, sending to /api/upload-images');
-			console.log(`Listing ID: ${listingId}`);
-
-			const response = await fetch('/api/upload-images', {
-				method: 'POST',
-				body: formData,
-				// Don't set Content-Type header - let browser set it with boundary
-			});
-
-			console.log(
-				'Upload response status:',
-				response.status,
-				response.statusText
-			);
-
-			if (!response.ok) {
-				const errorText = await response.text();
-				console.error('Upload failed - response text:', errorText);
-				let errorData;
+				// Send this chunk
 				try {
-					errorData = JSON.parse(errorText);
-				} catch {
-					errorData = { error: errorText || 'Unknown error' };
-				}
-				console.error('Upload failed - parsed error:', errorData);
-				throw new Error(errorData.error || 'Failed to upload images');
-			}
+					const response = await fetch('/api/upload-images', {
+						method: 'POST',
+						body: formData,
+					});
 
-			const data = await response.json();
-			console.log('Upload response data:', data);
-			uploadedUrls = data.urls || {};
+					if (!response.ok) {
+						const errorText = await response.text();
+						console.error(
+							`Chunk ${chunkIndex} upload failed:`,
+							errorText,
+						);
+						throw new Error(
+							`Failed to upload chunk ${chunkIndex}: ${errorText}`,
+						);
+					}
+
+					const data = await response.json();
+					console.log(`Chunk ${chunkIndex} response:`, data);
+
+					// Merge results
+					if (data.urls) {
+						uploadedUrls = { ...uploadedUrls, ...data.urls };
+					}
+				} catch (chunkError) {
+					console.error(
+						`Error uploading chunk ${chunkIndex}:`,
+						chunkError,
+					);
+					throw chunkError;
+				}
+
+				// Delay between chunks to be nice to the server
+				if (i < chunks.length - 1) {
+					await new Promise((resolve) => setTimeout(resolve, 500));
+				}
+			}
 
 			if (Object.keys(uploadedUrls).length === 0) {
-				console.warn(
-					'No URLs returned from upload, but request succeeded'
-				);
+				console.warn('No URLs returned from any chunks');
 				throw new Error(
-					'Images were uploaded but no URLs were returned'
+					'Images were uploaded but no URLs were returned',
 				);
 			}
 
 			console.log(
-				`Successfully uploaded ${
-					Object.keys(uploadedUrls).length
-				} images`
+				`Successfully uploaded total ${Object.keys(uploadedUrls).length} images`,
 			);
 
 			// Clean up preview URLs
@@ -364,7 +383,6 @@ export default function AddUpdateVehicle({ car }) {
 			});
 		} catch (error) {
 			console.error('Error uploading images:', error);
-			console.error('Error stack:', error.stack);
 			throw error;
 		} finally {
 			setUploadingImages(false);
@@ -422,7 +440,7 @@ export default function AddUpdateVehicle({ car }) {
 				// For new cars, create first, then upload images
 				const response = await axios.post(
 					'/api/createCar',
-					vehicleData
+					vehicleData,
 				);
 				listingId = response.data.listingId;
 
@@ -430,7 +448,7 @@ export default function AddUpdateVehicle({ car }) {
 					'Car created, listingId:',
 					listingId,
 					'Type:',
-					typeof listingId
+					typeof listingId,
 				);
 				console.log('Full response:', response.data);
 
@@ -439,16 +457,16 @@ export default function AddUpdateVehicle({ car }) {
 					try {
 						console.log(
 							'Starting image upload for listingId:',
-							listingId
+							listingId,
 						);
 						uploadedImageUrls = await uploadImages(listingId);
 						console.log(
 							'Uploaded image URLs received:',
-							uploadedImageUrls
+							uploadedImageUrls,
 						);
 						console.log(
 							'Number of URLs:',
-							Object.keys(uploadedImageUrls).length
+							Object.keys(uploadedImageUrls).length,
 						);
 
 						// Validate URLs before updating
@@ -459,7 +477,7 @@ export default function AddUpdateVehicle({ car }) {
 									url &&
 									typeof url === 'string' &&
 									url.includes(
-										'supabase.co/storage/v1/object/public/car-images'
+										'supabase.co/storage/v1/object/public/car-images',
 									)
 								) {
 									validUrls[key] = url;
@@ -467,16 +485,16 @@ export default function AddUpdateVehicle({ car }) {
 								} else {
 									console.error(
 										`Invalid URL for ${key}:`,
-										url
+										url,
 									);
 								}
-							}
+							},
 						);
 
 						console.log('Valid URLs to update:', validUrls);
 						console.log(
 							'Valid URL count:',
-							Object.keys(validUrls).length
+							Object.keys(validUrls).length,
 						);
 
 						if (Object.keys(validUrls).length > 0) {
@@ -490,12 +508,12 @@ export default function AddUpdateVehicle({ car }) {
 								'Numeric listing ID:',
 								numericListingId,
 								'Type:',
-								typeof numericListingId
+								typeof numericListingId,
 							);
 
 							if (!numericListingId || isNaN(numericListingId)) {
 								throw new Error(
-									`Invalid listing ID: ${listingId} (parsed as: ${numericListingId})`
+									`Invalid listing ID: ${listingId} (parsed as: ${numericListingId})`,
 								);
 							}
 
@@ -503,80 +521,80 @@ export default function AddUpdateVehicle({ car }) {
 								`Sending PATCH request to /api/${numericListingId} with ${
 									Object.keys(validUrls).length
 								} image URLs:`,
-								validUrls
+								validUrls,
 							);
 
 							try {
 								const updateResponse = await axios.patch(
 									`/api/${numericListingId}`,
-									validUrls
+									validUrls,
 								);
 								console.log(
 									'Update successful:',
-									updateResponse.data
+									updateResponse.data,
 								);
 
 								// Verify images were actually saved
 								const savedImages = Object.keys(
-									validUrls
+									validUrls,
 								).filter(
 									(key) =>
 										updateResponse.data[key] &&
 										updateResponse.data[key].includes(
-											'supabase.co'
-										)
+											'supabase.co',
+										),
 								);
 								console.log(
-									`Verified ${savedImages.length} images saved to database`
+									`Verified ${savedImages.length} images saved to database`,
 								);
 
 								if (savedImages.length === 0) {
 									console.error(
-										'WARNING: Images uploaded but not saved to database!'
+										'WARNING: Images uploaded but not saved to database!',
 									);
 									alert(
-										'Images were uploaded but may not have been saved. Please check the car and re-upload if needed.'
+										'Images were uploaded but may not have been saved. Please check the car and re-upload if needed.',
 									);
 								}
 							} catch (patchError) {
 								console.error(
 									'PATCH request failed:',
-									patchError
+									patchError,
 								);
 								console.error(
 									'PATCH error response:',
-									patchError.response?.data
+									patchError.response?.data,
 								);
 								throw new Error(
-									`Failed to update car with images: ${patchError.message}`
+									`Failed to update car with images: ${patchError.message}`,
 								);
 							}
 						} else {
 							console.error('No valid image URLs to update');
 							console.error('Uploaded URLs:', uploadedImageUrls);
 							alert(
-								'Images were uploaded but no valid URLs were returned. Please check the console for details and try editing the car to add images manually.'
+								'Images were uploaded but no valid URLs were returned. Please check the console for details and try editing the car to add images manually.',
 							);
 						}
 					} catch (uploadError) {
 						console.error(
 							'Error uploading/updating images:',
-							uploadError
+							uploadError,
 						);
 						console.error('Error response:', uploadError.response);
 						console.error(
 							'Error status:',
-							uploadError.response?.status
+							uploadError.response?.status,
 						);
 						console.error(
 							'Error details:',
-							uploadError.response?.data
+							uploadError.response?.data,
 						);
 						console.error('Error message:', uploadError.message);
 						// Don't fail the whole operation if image upload fails
 						// The car was already created successfully
 						alert(
-							'Car created successfully, but there was an error updating images. You can edit the car to add images manually.'
+							'Car created successfully, but there was an error updating images. You can edit the car to add images manually.',
 						);
 					}
 				}
@@ -618,13 +636,13 @@ export default function AddUpdateVehicle({ car }) {
 							? car.stockId < 10
 								? `00${car.stockId}`
 								: car.stockId < 100
-								? `0${car.stockId}`
-								: car.stockId
+									? `0${car.stockId}`
+									: car.stockId
 							: currentCarId < 10
-							? `00${currentCarId}`
-							: currentCarId < 100
-							? `0${currentCarId}`
-							: currentCarId}
+								? `00${currentCarId}`
+								: currentCarId < 100
+									? `0${currentCarId}`
+									: currentCarId}
 					</h1>
 				</div>
 				<div className="grid grid-cols-2 gap-4">
