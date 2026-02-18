@@ -134,6 +134,14 @@ export async function PATCH(request, { params }) {
 		console.log('Updating car with data:', carData);
 		console.log('Image fields being updated:', Object.keys(carData).filter(key => key.startsWith('image')));
 
+		// If this car is being set as weekly special, clear all others first
+		if (body.weeklySpecial === true || carData.weekly_special === true) {
+			await supabaseAdmin
+				.from('cars')
+				.update({ weekly_special: false })
+				.eq('weekly_special', true);
+		}
+
 		const { data: updatedCar, error } = await supabaseAdmin
 			.from('cars')
 			.update(carData)

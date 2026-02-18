@@ -20,6 +20,7 @@ export async function POST(request) {
 			safety: body.safety || 'Certified',
 			financingAvailable: body.financingAvailable || false,
 			sold: body.sold || false,
+			weeklySpecial: body.weeklySpecial || false,
 		};
 
 		// Remove undefined/null image fields to avoid database issues
@@ -31,6 +32,14 @@ export async function POST(request) {
 		}
 
 		const carData = transformCarToDB(cleanedBody);
+
+		// If this car is being set as weekly special, clear all others first
+		if (cleanedBody.weeklySpecial) {
+			await supabaseAdmin
+				.from('cars')
+				.update({ weekly_special: false })
+				.eq('weekly_special', true);
+		}
 
 		const { data: newCar, error } = await supabaseAdmin
 			.from('cars')

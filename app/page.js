@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import AboutUs from './components/AboutUs';
 import ContactUs from './components/ContactUs';
 import Hero from './components/Hero';
+import WeeklySpecial from './components/WeeklySpecial';
 import NewArrivals from './components/NewArrivals';
 
 export default function Home() {
@@ -45,6 +46,7 @@ export default function Home() {
 	return (
 		<main>
 			<Hero />
+			<WeeklySpecial />
 			<NewArrivals />
 			<AboutUs />
 			<ContactUs />

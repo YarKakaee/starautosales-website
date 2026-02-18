@@ -431,6 +431,7 @@ export default function AddUpdateVehicle({ car }) {
 				doors: parseInt(data.doors, 10),
 				sold: Boolean(data.sold),
 				financingAvailable: Boolean(data.financingAvailable),
+				weeklySpecial: Boolean(data.weeklySpecial),
 				...imageData,
 			};
 
@@ -906,6 +907,26 @@ export default function AddUpdateVehicle({ car }) {
 						className="text-sm font-medium text-dblue cursor-pointer"
 					>
 						Financing Available
+					</label>
+				</div>
+
+				{/* Weekly Special Checkbox */}
+				<div className="mb-4 flex items-center gap-3">
+					<input
+						type="checkbox"
+						id="weeklySpecial"
+						defaultChecked={car?.weeklySpecial || false}
+						className="w-5 h-5 text-dblue border-gray-300 rounded focus:ring-dblue focus:ring-2 cursor-pointer"
+						{...register('weeklySpecial', {
+							setValueAs: (value) =>
+								value === true || value === 'on',
+						})}
+					/>
+					<label
+						htmlFor="weeklySpecial"
+						className="text-sm font-medium text-dblue cursor-pointer"
+					>
+						Weekly Special
 					</label>
 				</div>
 

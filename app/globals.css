@@ -82,6 +82,34 @@
 	animation: float 10s ease-in-out infinite;
 }
 
+@keyframes sweepShine {
+	0% {
+		transform: translateX(-100%) skewX(-15deg);
+	}
+	100% {
+		transform: translateX(300%) skewX(-15deg);
+	}
+}
+
+@keyframes softGlow {
+	0%, 100% {
+		opacity: 0.04;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 0.08;
+		transform: scale(1.05);
+	}
+}
+
+.animate-sweep-shine {
+	animation: sweepShine 4s ease-in-out infinite;
+}
+
+.animate-soft-glow {
+	animation: softGlow 8s ease-in-out infinite;
+}
+
 html {
 	scroll-behavior: smooth;
 }
