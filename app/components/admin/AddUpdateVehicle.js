@@ -215,8 +215,8 @@ export default function AddUpdateVehicle({ car }) {
 		try {
 			// Chunk the files to avoid payload too large errors
 			// Vercel serverless functions have a 4.5MB limit
-			// 3 images per chunk is a safe bet (assuming ~1-1.5MB per image after optimization)
-			const CHUNK_SIZE = 3;
+			// Reduce to 1 image per chunk to be absolutely safe
+			const CHUNK_SIZE = 1;
 			const chunks = [];
 
 			for (let i = 0; i < filesToUpload.length; i += CHUNK_SIZE) {
@@ -684,7 +684,9 @@ export default function AddUpdateVehicle({ car }) {
 							placeholder="Sale Price (optional)"
 							{...register('salePrice', {
 								validate: (value) =>
-									!value || !isNaN(value) || 'This field must be a number',
+									!value ||
+									!isNaN(value) ||
+									'This field must be a number',
 							})}
 						/>
 						{errors.salePrice && (
