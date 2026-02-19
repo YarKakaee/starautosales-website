@@ -213,10 +213,10 @@ export default function AddUpdateVehicle({ car }) {
 		let uploadedUrls = {};
 
 		try {
-			// Chunk the files to avoid payload too large errors
-			// Vercel serverless functions have a 4.5MB limit
-			// Reduce to 1 image per chunk to be absolutely safe
-			const CHUNK_SIZE = 1;
+			// Chunk the files
+			// With strictly enforced 1MB limit per image, we can safely send 3 images per chunk
+			// 3 * 1MB = 3MB < 4.5MB limit
+			const CHUNK_SIZE = 3;
 			const chunks = [];
 
 			for (let i = 0; i < filesToUpload.length; i += CHUNK_SIZE) {
@@ -227,115 +227,84 @@ export default function AddUpdateVehicle({ car }) {
 				`Split ${filesToUpload.length} images into ${chunks.length} chunks`,
 			);
 
-			// Process chunks sequentially
+			// We will pipeline the uploads:
+			// 1. Process/Compress images for Chunk N
+			// 2. Start Upload for Chunk N (do not await immediately)
+			// 3. Process/Compress images for Chunk N+1
+			// This allows the CPU to work on compression while the Network works on upload
+
+			const uploadPromises = [];
+
 			for (let i = 0; i < chunks.length; i++) {
 				const chunk = chunks[i];
 				const chunkIndex = i + 1;
-				console.log(
-					`Processing chunk ${chunkIndex}/${chunks.length} with ${chunk.length} images`,
-				);
+				console.log(`Preparing chunk ${chunkIndex}/${chunks.length}`);
 
 				const formData = new FormData();
 
-				// Process images in this chunk sequentially
+				// Process images in this chunk sequentially (CPU bound)
 				for (const [key, file] of chunk) {
 					try {
+						// Use robust conversion with strict 1MB limit
+						const jpegFile = await convertImageToJpeg(file);
 						console.log(
-							`Processing ${key}: size=${file.size}, type=${
-								file.type || 'unknown'
-							}, name=${file.name || 'unknown'}`,
+							`Converted ${key} to JPEG: size=${(jpegFile.size / 1024 / 1024).toFixed(2)}MB`,
 						);
-
-						// For mobile, use a shorter timeout and simpler conversion
-						// For mobile, use the robust conversion to ensure size limits
-						let jpegFile;
-						try {
-							// This now handles resizing and strict size enforcement internally
-							jpegFile = await convertImageToJpeg(file);
-							console.log(
-								`Converted ${key} to JPEG: size=${jpegFile.size}, type=${jpegFile.type}`,
-							);
-						} catch (conversionError) {
-							console.error(
-								`Conversion failed for ${key}:`,
-								conversionError.message,
-							);
-							// Do NOT fallback to original file if it's too large
-							// The convertImageToJpeg function only rejects if original is also too large
-							continue;
-						}
-
 						formData.append(key, jpegFile, `${key}.jpg`);
-
-						// Small delay within chunk
-						if (chunk.length > 1) {
-							await new Promise((resolve) =>
-								setTimeout(resolve, 50),
-							);
-						}
-					} catch (error) {
-						console.error(`Failed to process ${key}:`, error);
-						// Try fallback
-						try {
-							const fallbackFile = new File(
-								[file],
-								`${key}.jpg`,
-								{
-									type: 'image/jpeg',
-									lastModified:
-										file.lastModified || Date.now(),
-								},
-							);
-							formData.append(key, fallbackFile, `${key}.jpg`);
-						} catch (fallbackError) {
-							console.error(
-								`Could not add ${key} even as fallback:`,
-								fallbackError,
-							);
-						}
+					} catch (conversionError) {
+						console.error(
+							`Conversion failed for ${key}:`,
+							conversionError.message,
+						);
+						// Skip this file if it fails conversion
+						continue;
 					}
 				}
 
 				formData.append('listingId', String(listingId || 'temp'));
 
-				// Send this chunk
-				try {
-					const response = await fetch('/api/upload-images', {
-						method: 'POST',
-						body: formData,
+				// Start upload for this chunk and push promise to array
+				const uploadPromise = fetch('/api/upload-images', {
+					method: 'POST',
+					body: formData,
+				})
+					.then(async (response) => {
+						if (!response.ok) {
+							const errorText = await response.text();
+							throw new Error(
+								`Chunk ${chunkIndex} failed: ${errorText}`,
+							);
+						}
+						return response.json();
+					})
+					.then((data) => {
+						console.log(
+							`Chunk ${chunkIndex} uploaded successfully`,
+						);
+						return data.urls || {};
+					})
+					.catch((error) => {
+						console.error(
+							`Error uploading chunk ${chunkIndex}:`,
+							error,
+						);
+						// Retain partial success if possible, or simple throw
+						throw error;
 					});
 
-					if (!response.ok) {
-						const errorText = await response.text();
-						console.error(
-							`Chunk ${chunkIndex} upload failed:`,
-							errorText,
-						);
-						throw new Error(
-							`Failed to upload chunk ${chunkIndex}: ${errorText}`,
-						);
-					}
-
-					const data = await response.json();
-					console.log(`Chunk ${chunkIndex} response:`, data);
-
-					// Merge results
-					if (data.urls) {
-						uploadedUrls = { ...uploadedUrls, ...data.urls };
-					}
-				} catch (chunkError) {
-					console.error(
-						`Error uploading chunk ${chunkIndex}:`,
-						chunkError,
-					);
-					throw chunkError;
-				}
-
-				// Delay between chunks to be nice to the server
-				if (i < chunks.length - 1) {
-					await new Promise((resolve) => setTimeout(resolve, 500));
-				}
+				uploadPromises.push(uploadPromise);
 			}
+
+			// Wait for all uploads to complete
+			console.log(
+				'All chunks prepared, waiting for uploads to complete...',
+			);
+			const results = await Promise.all(uploadPromises);
+
+			// Merge all results
+			results.forEach((urls) => {
+				uploadedUrls = { ...uploadedUrls, ...urls };
+			});
 
 			if (Object.keys(uploadedUrls).length === 0) {
 				console.warn('No URLs returned from any chunks');

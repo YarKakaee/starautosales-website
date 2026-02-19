@@ -21,12 +21,16 @@ export async function POST(request) {
 				// Ensure file has content
 				if (file.size > 0) {
 					imageFiles[`image${i}`] = file;
-					console.log(`Found image${i}: size=${file.size}, type=${file.type || 'unknown'}, name=${file.name || 'unknown'}`);
+					console.log(
+						`Found image${i}: size=${file.size}, type=${file.type || 'unknown'}, name=${file.name || 'unknown'}`,
+					);
 				} else {
 					console.warn(`image${i} has zero size, skipping`);
 				}
 			} else if (file) {
-				console.warn(`image${i} is not a File or Blob, type: ${typeof file}`);
+				console.warn(
+					`image${i} is not a File or Blob, type: ${typeof file}`,
+				);
 			}
 		}
 
@@ -35,7 +39,7 @@ export async function POST(request) {
 		if (Object.keys(imageFiles).length === 0) {
 			return NextResponse.json(
 				{ error: 'No valid images provided' },
-				{ status: 400 }
+				{ status: 400 },
 			);
 		}
 
@@ -47,22 +51,33 @@ export async function POST(request) {
 			// Always use .jpg extension since we convert all images to JPEG on client side
 			// This ensures compatibility, especially for iPhone HEIC images
 			const fileExtension = 'jpg';
-			const path = `${basePath}/${key}.${fileExtension}`;
+			// Append timestamp to ensure unique URL and prevent caching issues
+			const timestamp = Date.now();
+			const path = `${basePath}/${key}-${timestamp}.${fileExtension}`;
 
 			try {
-				console.log(`Uploading ${key} to path: ${path}, size: ${file.size}, type: ${file.type || 'unknown'}`);
+				console.log(
+					`Uploading ${key} to path: ${path}, size: ${file.size}, type: ${file.type || 'unknown'}`,
+				);
 				const result = await uploadImage(file, path);
 				console.log(`Uploaded ${key} successfully. URL: ${result.url}`);
-				
+
 				// Validate URL format
-				if (result.url && result.url.includes('supabase.co/storage/v1/object/public/car-images')) {
+				if (
+					result.url &&
+					result.url.includes(
+						'supabase.co/storage/v1/object/public/car-images',
+					)
+				) {
 					uploadedUrls[key] = result.url;
 				} else {
 					console.error(`Invalid URL format for ${key}:`, result.url);
 				}
 			} catch (error) {
 				console.error(`Error uploading ${key}:`, error);
-				console.error(`Error details - message: ${error.message}, stack: ${error.stack}`);
+				console.error(
+					`Error details - message: ${error.message}, stack: ${error.stack}`,
+				);
 				// Continue with other images even if one fails
 			}
 		}
@@ -76,7 +91,7 @@ export async function POST(request) {
 				urls: uploadedUrls,
 				count: Object.keys(uploadedUrls).length,
 			},
-			{ status: 200 }
+			{ status: 200 },
 		);
 	} catch (error) {
 		console.error('Error uploading images:', error);
@@ -84,8 +99,7 @@ export async function POST(request) {
 			{
 				error: error.message || 'Failed to upload images',
 			},
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
 }
-
