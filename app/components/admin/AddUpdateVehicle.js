@@ -247,49 +247,22 @@ export default function AddUpdateVehicle({ car }) {
 						);
 
 						// For mobile, use a shorter timeout and simpler conversion
+						// For mobile, use the robust conversion to ensure size limits
 						let jpegFile;
 						try {
-							const conversionPromise = convertImageToJpeg(file);
-							const timeoutPromise = new Promise((_, reject) =>
-								setTimeout(
-									() =>
-										reject(new Error('Conversion timeout')),
-									2000,
-								),
+							// This now handles resizing and strict size enforcement internally
+							jpegFile = await convertImageToJpeg(file);
+							console.log(
+								`Converted ${key} to JPEG: size=${jpegFile.size}, type=${jpegFile.type}`,
 							);
-							jpegFile = await Promise.race([
-								conversionPromise,
-								timeoutPromise,
-							]);
 						} catch (conversionError) {
-							console.warn(
-								`Conversion failed or timed out for ${key}, using original with JPEG metadata:`,
+							console.error(
+								`Conversion failed for ${key}:`,
 								conversionError.message,
 							);
-							// Fallback logic
-							if (!(file instanceof File)) {
-								jpegFile = new File([file], `${key}.jpg`, {
-									type: 'image/jpeg',
-									lastModified:
-										file.lastModified || Date.now(),
-								});
-							} else if (
-								!file.name ||
-								!file.name.endsWith('.jpg')
-							) {
-								const baseName =
-									(file.name || key).replace(
-										/\.[^/.]+$/,
-										'',
-									) || key;
-								jpegFile = new File([file], `${baseName}.jpg`, {
-									type: file.type || 'image/jpeg',
-									lastModified:
-										file.lastModified || Date.now(),
-								});
-							} else {
-								jpegFile = file;
-							}
+							// Do NOT fallback to original file if it's too large
+							// The convertImageToJpeg function only rejects if original is also too large
+							continue;
 						}
 
 						formData.append(key, jpegFile, `${key}.jpg`);
