@@ -19,6 +19,7 @@ export default function Hero() {
 					src="/assets/abus1.png"
 					alt="Star Auto Sales Dealership"
 					fill
+					sizes="100vw"
 					className="object-cover"
 					priority
 					quality={90}

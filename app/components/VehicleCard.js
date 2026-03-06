@@ -26,7 +26,7 @@ export default function VehicleCard({
 				style={{
 					transitionDelay: `${Math.min(
 						index * animationDelay,
-						300
+						300,
 					)}ms`,
 				}}
 			>
@@ -38,6 +38,7 @@ export default function VehicleCard({
 								src={car.image1}
 								alt={`${car.year} ${car.make} ${car.model}`}
 								fill
+								sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
 								className={`object-cover transition-transform duration-500 group-hover:scale-105 ${
 									car.sold ? 'opacity-40' : ''
 								}`}
@@ -90,7 +91,9 @@ export default function VehicleCard({
 
 					{/* Price and Safety */}
 					<div className="pt-4 border-t border-gray-100 flex items-end justify-between">
-						<p className={`text-2xl font-bold ${car.salePrice ? 'text-green-600' : 'text-dblue'}`}>
+						<p
+							className={`text-2xl font-bold ${car.salePrice ? 'text-green-600' : 'text-dblue'}`}
+						>
 							${(car.salePrice || car.price).toLocaleString()}
 							<span className="text-[15px] font-medium text-gray-500 ml-1">
 								+ HST

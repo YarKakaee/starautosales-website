@@ -99,13 +99,13 @@ export default function VehicleDetailClient({ car }) {
 
 	const goToPreviousImage = () => {
 		setCurrentImageIndex((prev) =>
-			prev === 0 ? images.length - 1 : prev - 1
+			prev === 0 ? images.length - 1 : prev - 1,
 		);
 	};
 
 	const goToNextImage = () => {
 		setCurrentImageIndex((prev) =>
-			prev === images.length - 1 ? 0 : prev + 1
+			prev === images.length - 1 ? 0 : prev + 1,
 		);
 	};
 
@@ -204,6 +204,7 @@ export default function VehicleDetailClient({ car }) {
 								src={selectedImage}
 								alt={`${year} ${make} ${model}`}
 								fill
+								sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1200px"
 								className="object-cover transition-opacity duration-300"
 								priority
 							/>
@@ -275,6 +276,7 @@ export default function VehicleDetailClient({ car }) {
 													index + 1
 												}`}
 												fill
+												sizes="(max-width: 640px) 25vw, (max-width: 1024px) 20vw, 20vw"
 												className="object-cover"
 											/>
 										</button>

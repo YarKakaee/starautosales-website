@@ -104,6 +104,7 @@ export default function WeeklySpecial() {
 							src={car.image1}
 							alt={`${car.year} ${car.make} ${car.model}`}
 							fill
+							sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1200px"
 							className="object-cover transition-transform duration-700 ease-out group-hover/img:scale-[1.03]"
 							priority
 							quality={90}

@@ -11,7 +11,10 @@ export default function AboutUs() {
 	}, []);
 
 	return (
-		<section id="about" className="py-32 bg-dblue text-white relative overflow-hidden">
+		<section
+			id="about"
+			className="py-32 bg-dblue text-white relative overflow-hidden"
+		>
 			{/* Subtle background pattern */}
 			<div className="absolute inset-0 opacity-5">
 				<div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:40px_40px]" />
@@ -55,6 +58,7 @@ export default function AboutUs() {
 								src="/assets/abus1.png"
 								alt="Quality Selection"
 								fill
+								sizes="(max-width: 768px) 100vw, 50vw"
 							/>
 							<div className="absolute inset-0 bg-gradient-to-t from-dblue/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 						</div>
@@ -83,6 +87,7 @@ export default function AboutUs() {
 								src="/assets/abus2.png"
 								alt="Exceptional Service"
 								fill
+								sizes="(max-width: 768px) 100vw, 50vw"
 							/>
 							<div className="absolute inset-0 bg-gradient-to-t from-dblue/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 						</div>
