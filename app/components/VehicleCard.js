@@ -96,7 +96,7 @@ export default function VehicleCard({
 						>
 							${(car.salePrice || car.price).toLocaleString()}
 							<span className="text-[15px] font-medium text-gray-500 ml-1">
-								+ HST
+								+ tax
 							</span>
 						</p>
 						{car.safety && (

@@ -165,7 +165,7 @@ export default function WeeklySpecial() {
 										<p className="text-3xl lg:text-4xl font-semibold text-green-400 tracking-tight">
 											${car.salePrice.toLocaleString()}
 											<span className="text-sm font-normal text-white/20 ml-1.5">
-												+HST
+												+ tax
 											</span>
 										</p>
 									</>
@@ -173,7 +173,7 @@ export default function WeeklySpecial() {
 									<p className="text-3xl lg:text-4xl font-semibold text-white tracking-tight">
 										${car.price.toLocaleString()}
 										<span className="text-sm font-normal text-white/20 ml-1.5">
-											+HST
+											+ tax
 										</span>
 									</p>
 								)}
@@ -233,7 +233,7 @@ export default function WeeklySpecial() {
 										<p className="text-3xl font-semibold text-green-400 tracking-tight">
 											${car.salePrice.toLocaleString()}
 											<span className="text-sm font-normal text-white/20 ml-1.5">
-												+HST
+												+ tax
 											</span>
 										</p>
 									</>
@@ -241,7 +241,7 @@ export default function WeeklySpecial() {
 									<p className="text-3xl font-semibold text-white tracking-tight">
 										${car.price.toLocaleString()}
 										<span className="text-sm font-normal text-white/20 ml-1.5">
-											+HST
+											+ tax
 										</span>
 									</p>
 								)}

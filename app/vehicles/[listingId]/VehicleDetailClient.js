@@ -522,7 +522,7 @@ export default function VehicleDetailClient({ car }) {
 											<div className="text-4xl font-extrabold text-green-600 mb-1">
 												${salePrice.toLocaleString()}
 												<span className="text-xl font-normal text-gray-500 ml-1">
-													+ HST
+													+ tax
 												</span>
 											</div>
 										</>
@@ -530,7 +530,7 @@ export default function VehicleDetailClient({ car }) {
 										<div className="text-4xl font-extrabold text-dblue mb-1">
 											${price.toLocaleString()}
 											<span className="text-xl font-normal text-gray-500 ml-1">
-												+ HST
+												+ tax
 											</span>
 										</div>
 									)}
@@ -577,13 +577,13 @@ export default function VehicleDetailClient({ car }) {
 											<FaPhone className="w-4 h-4 scale-x-[-1]" />
 											Call Now
 										</a>
-										<a
-											href="mailto:starautosalesinfo@gmail.com"
+										<Link
+											href="/#contact"
 											className="w-full bg-lred text-white py-3 px-6 rounded-md font-semibold hover:bg-lred/90 transition-colors flex items-center justify-center gap-2"
 										>
-											<FaEnvelope className="w-4 h-4" />
-											Email Us
-										</a>
+											<FaDollarSign className="w-4 h-4" />
+											Finance Now
+										</Link>
 									</div>
 								)}
 							</div>
