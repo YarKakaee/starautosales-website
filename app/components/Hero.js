@@ -40,8 +40,8 @@ export default function Hero() {
 					}`}
 				>
 					{/* Badge */}
-					<div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 text-white/90 text-xs font-medium">
-						Trusted • Certified • Quality Guaranteed
+					<div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.1)] text-white text-sm sm:text-base font-bold tracking-wide transition-all hover:scale-105 hover:bg-white/15 hover:border-white/30 cursor-default">
+						<span className="text-xl">💰</span> We Finance All Credit
 					</div>
 
 					{/* Main Heading */}

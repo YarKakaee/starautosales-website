@@ -581,8 +581,17 @@ export default function VehicleDetailClient({ car }) {
 											href="/#contact"
 											className="w-full bg-lred text-white py-3 px-6 rounded-md font-semibold hover:bg-lred/90 transition-colors flex items-center justify-center gap-2"
 										>
-											<FaDollarSign className="w-4 h-4" />
-											Finance Now
+											{financingAvailable ? (
+												<>
+													<FaDollarSign className="w-4 h-4" />
+													Finance Now
+												</>
+											) : (
+												<>
+													<FaEnvelope className="w-4 h-4" />
+													Contact Now
+												</>
+											)}
 										</Link>
 									</div>
 								)}

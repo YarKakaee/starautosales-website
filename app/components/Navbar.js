@@ -5,55 +5,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { FaPhone } from 'react-icons/fa';
-import { FaX } from 'react-icons/fa6';
+
 
 export default function Navbar() {
 	const currentPath = usePathname();
 	const [menuOpen, setMenuOpen] = useState(false);
 	const [scrolled, setScrolled] = useState(false);
-	const [bannerVisible, setBannerVisible] = useState(false);
-	const [bannerHeight, setBannerHeight] = useState(0);
-	const bannerRef = useRef(null);
-
-	useEffect(() => {
-		// Check if banner was previously dismissed
-		const bannerDismissed = localStorage.getItem('bannerDismissed');
-		if (!bannerDismissed) {
-			setBannerVisible(true);
-		}
-	}, []);
-
-	useEffect(() => {
-		// Measure banner height when it becomes visible
-		if (bannerVisible && bannerRef.current) {
-			// Use ResizeObserver for accurate measurement
-			const resizeObserver = new ResizeObserver((entries) => {
-				for (const entry of entries) {
-					const height = entry.contentRect.height;
-					setBannerHeight(height);
-				}
-			});
-
-			resizeObserver.observe(bannerRef.current);
-
-			// Also measure immediately with requestAnimationFrame for accurate measurement
-			requestAnimationFrame(() => {
-				if (bannerRef.current) {
-					const height =
-						bannerRef.current.getBoundingClientRect().height;
-					if (height > 0) {
-						setBannerHeight(height);
-					}
-				}
-			});
-
-			return () => {
-				resizeObserver.disconnect();
-			};
-		} else {
-			setBannerHeight(0);
-		}
-	}, [bannerVisible]);
 
 	useEffect(() => {
 		const handleScroll = () => {
@@ -63,10 +20,6 @@ export default function Navbar() {
 		return () => window.removeEventListener('scroll', handleScroll);
 	}, []);
 
-	const handleBannerDismiss = () => {
-		setBannerVisible(false);
-		localStorage.setItem('bannerDismissed', 'true');
-	};
 
 	const toggleMenu = () => {
 		setMenuOpen(!menuOpen);
@@ -79,9 +32,8 @@ export default function Navbar() {
 			const aboutSection = document.getElementById('about');
 			if (aboutSection) {
 				const navbarOffset = 80; // Navbar height
-				const bannerOffset = bannerHeight; // Banner height when visible
 				const offsetTop =
-					aboutSection.offsetTop - navbarOffset - bannerOffset;
+					aboutSection.offsetTop - navbarOffset;
 				window.scrollTo({
 					top: offsetTop,
 					behavior: 'smooth',
@@ -101,9 +53,8 @@ export default function Navbar() {
 			const contactSection = document.getElementById('contact');
 			if (contactSection) {
 				const navbarOffset = 80; // Navbar height
-				const bannerOffset = bannerHeight; // Banner height when visible
 				const offsetTop =
-					contactSection.offsetTop - navbarOffset - bannerOffset;
+					contactSection.offsetTop - navbarOffset;
 				window.scrollTo({
 					top: offsetTop,
 					behavior: 'smooth',
@@ -124,41 +75,10 @@ export default function Navbar() {
 
 	return (
 		<>
-			{/* Announcement Banner */}
-			{bannerVisible && (
-				<div
-					ref={bannerRef}
-					className="fixed top-0 left-0 right-0 z-[60] bg-gradient-to-r from-black via-gray-900 to-black text-white m-0 p-0"
-				>
-					<div className="max-w-7xl mx-auto px-6 lg:px-8 m-0">
-						<div className="flex items-center justify-center py-3 relative m-0">
-							<p className="text-sm font-medium text-center px-8">
-								<span className="font-semibold">🎉 New:</span>{' '}
-								Financing now available on select cars!
-							</p>
-							<button
-								onClick={handleBannerDismiss}
-								className="absolute right-0 p-1.5 rounded-md hover:bg-white/20 transition-colors text-white/90"
-								aria-label="Dismiss banner"
-							>
-								<FaX className="w-4 h-4" />
-							</button>
-						</div>
-					</div>
-				</div>
-			)}
+
 
 			<nav
-				style={{
-					top:
-						bannerVisible && bannerHeight > 0
-							? `${bannerHeight}px`
-							: bannerVisible
-							? '48px'
-							: '0px',
-					transition: 'background-color 0.5s, box-shadow 0.5s',
-				}}
-				className={`fixed left-0 right-0 z-50 ${
+				className={`fixed top-0 transition-all duration-500 left-0 right-0 z-50 ${
 					scrolled ? 'bg-white shadow-md' : 'bg-transparent'
 				}`}
 			>
